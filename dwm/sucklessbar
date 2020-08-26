@@ -61,7 +61,7 @@ refresh_widgets_set2() { \
 # Construct the statusbar
 refresh_widgets_set1() { \
 
-    # Date widget
+    # Time and date widget
     INDEX=1;
     WIDGET[$INDEX]=$(echo -e "$glyph_time"; /usr/bin/date -Im | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print " " $1}')
 
