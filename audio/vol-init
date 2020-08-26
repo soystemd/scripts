@@ -1,0 +1,28 @@
+#!/bin/sh
+# Koonix 2020-08-19
+
+sleep 2
+
+# Delete all temp files relted to this script
+find -P /tmp -maxdepth 1 -name volctl\* -delete
+
+# Make one temp file
+mktemp -q -p /tmp volctl."${USER}".XXXXXX
+
+# Find and set temp file paths
+currentsinkfile="$(find -P /tmp -maxdepth 1 -name volctl\*)"
+
+# Get the index of sink device
+headphones="$(pactl list short sinks | awk '/analog-stereo/ {print $1}')"
+
+# Make the temp file containing the current sink device
+echo "analog-stereo" > "$currentsinkfile"
+
+# Set the default device
+pactl set-default-sink "$headphones"
+
+# Change default device of all running audio streams
+pactl list short sink-inputs | while read -r stream; do
+    streamid=$(echo "$stream" | awk '{print $1}')
+    pactl move-sink-input "$streamid" "$headphones"
+done

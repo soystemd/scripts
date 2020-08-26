@@ -1,0 +1,52 @@
+#!/bin/sh
+# Koonix 2020-08-19
+
+OPTIND=1
+
+SCRPATH="${HOME}/.local/sysinfo/"
+SHOWHELP="cat ${SCRPATH}sysinfo-help"
+LIVEUPDATE=
+SCRIPT=
+
+while getopts "h?ltsda" opt; do
+    case "$opt" in
+    h|\?)
+	$SHOWHELP
+        exit 0
+        ;;
+
+    l)  LIVEUPDATE="-live"
+        ;;
+
+    a)  SCRIPT="sysinfo-all"
+    	/bin/bash "${SCRPATH}${SCRIPT}${LIVEUPDATE}"
+	exit 0
+        ;;
+
+    t)  SCRIPT="sysinfo-top"
+    	/bin/bash "${SCRPATH}${SCRIPT}${LIVEUPDATE}"
+    	exit 0
+    	;;
+
+    s)  SCRIPT="sysinfo-short"
+    	/bin/bash "${SCRPATH}${SCRIPT}${LIVEUPDATE}"
+    	exit 0
+    	;;
+
+    d)  SCRIPT="sysinfo-disk"
+    	/bin/bash "${SCRPATH}${SCRIPT}${LIVEUPDATE}"
+    	exit 0
+	;;
+
+    l)  LIVEUPDATE="-live"
+        ;;
+
+    esac
+done
+
+
+if [ -z "$SCRIPT" ]
+then
+   $SHOWHELP
+   exit
+fi

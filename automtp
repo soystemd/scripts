@@ -1,0 +1,94 @@
+#!/bin/bash
+# Koonix 2020-08-19
+
+# Check if the user wants to proceed
+echo "All MTP devices will now be unmounted."
+read -p "Press enter to proceed..."
+
+# Intercept abort signals from jmtpfs and do not show them.
+trap "" SIGABRT
+
+# Clear all the leftover mtp crap
+echo; echo "Cleaning previous mount points..."
+sudo umount "${HOME}"/mount/* > /dev/null 2>&1
+rmdir "${HOME}"/mount/* > /dev/null 2>&1
+
+# Query mtp devices to assert the precense of this master device (lol)
+echo; echo "Pinging all available devices..."
+jmtpfs > /dev/null 2>&1
+
+
+# Make temp files
+devices_info_list=$(mktemp /tmp/automtpmount.XXXXXXXX)
+devices_vendor_list=$(mktemp /tmp/automtpmount.XXXXXXXX)
+devices_id_list=$(mktemp /tmp/automtpmount.XXXXXXXX)
+devices_name_list=$(mktemp /tmp/automtpmount.XXXXXXXX)
+
+
+# Build some lists of devices
+echo "Building list of devices..."
+jmtpfs -l | awk 'f;/Available/ {f=1}' | awk '!seen[$0]++'         > "$devices_info_list"
+awk -F  ", " '{print $6}'                    "$devices_info_list" > "$devices_vendor_list"
+awk '{print $1 substr($2, 1, length($2)-1)}' "$devices_info_list" > "$devices_id_list"
+jmtpfs -l | awk '/Device/ {print substr($0, index($0, $8))}'      > "$devices_name_list"
+
+
+# Exit if the list of devices is empty (no device found)
+if [[ ! -s $devices_info_list ]]
+then
+    echo
+    echo "No devices found!"
+    read -p "Press enter to exit..."
+    exit 1
+fi
+
+
+# List detected devices
+echo; echo "~~ ~~ ~~ ~~ ~~ ~~"
+echo "Detected devices:"
+echo; cat "$devices_name_list"
+echo "~~ ~~ ~~ ~~ ~~ ~~"
+
+echo; echo "~~ ~~ ~~ ~~ ~~ ~~"
+echo "Device vendors:"
+echo; cat "$devices_vendor_list"
+echo "~~ ~~ ~~ ~~ ~~ ~~"
+
+
+# Check if the user wants to proceed
+echo; echo "All detected devices will now be mounted."
+read -p "Press enter to proceed..."
+
+
+# Count number of devices
+devices_count=$(wc -l < "$devices_info_list")
+
+# Loop over all devices and mount them
+i=1
+while [[ $i -le $devices_count ]]
+do
+
+    device_vendor=$(sed "${i}q;d" "$devices_vendor_list")
+    device_id=$(sed "${i}q;d" "$devices_id_list")
+    device_name=$(sed "${i}q;d" "$devices_name_list")
+
+    device_id_no_comma=${device_id//,}
+    mount_dir_name="${device_vendor}${device_id_no_comma}"
+    mount_dir="${HOME}/mount/${mount_dir_name}"
+    mkdir -p "$mount_dir"
+
+    echo
+    echo "Mounting device: $device_name"
+    echo "As: $mount_dir_name"
+
+    jmtpfs -device="$device_id" "$mount_dir" -o auto_unmount > /dev/null 2>&1
+
+    ((i = i + 1))
+done
+
+
+# Delete temp files
+find -P /tmp -maxdepth 1 -name automtpmount\* -delete > /dev/null 2>&1
+
+# Prompt the exit
+echo; read -p "Done. Press enter to exit..."

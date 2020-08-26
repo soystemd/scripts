@@ -1,0 +1,111 @@
+#!/bin/bash
+# Koonix 2020-08-23
+
+
+# Configuration
+# The delimiter character(s) between widgets
+DELIMITER=" ] [ "
+ENDDELIMITER=" ]"
+BAR_PREFIX=""
+# Glyphs/Emojis
+glyph_keyboard=""
+glyph_headphone=""
+glyph_speaker=""
+glyph_memory=""
+glyph_temp=""
+glyph_time=""
+
+
+# Trap for updating the statusbar at will
+trap 'refresh_bar_sigtrap' SIGTRAP
+
+
+# Declare the array
+declare -a WIDGET
+
+
+# Stick all the widgets together into a line
+build_bar() { \
+    STATUSBAR=$(for i in {4..1}
+    do
+        echo "$DELIMITER"
+        echo "${WIDGET[$i]}"
+    done)
+}
+
+
+# Construct the statusbar while updating only some of the widgets
+refresh_widgets_set2() { \
+
+    # Keyboard layout widget
+    INDEX=2;
+    WIDGET[$INDEX]=$(echo "$glyph_keyboard"; xkblayout-state print " %s"; echo)
+
+    # Check if audio is playing through headphones or speakers
+    CURRENTSINK=$(vol-getcurrentsinkname)
+    if [ "$CURRENTSINK" = "analog-stereo" ]
+    then
+        SINKICON="$glyph_headphone"
+    else
+        SINKICON="$glyph_speaker"
+    fi
+    # Volume widget
+    INDEX=3;
+    WIDGET[$INDEX]=$(echo "${SINKICON} "; vol-getcurrentvolumeandmute)
+
+    # Stick all the widgets together into a line
+    build_bar
+}
+
+
+# Construct the statusbar
+refresh_widgets_set1() { \
+
+    # Date widget
+    INDEX=1;
+    WIDGET[$INDEX]=$(echo -e "$glyph_time"; /usr/bin/date -Im | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print " " $1}')
+
+    # Volume widget
+    refresh_widgets_set2
+
+    # Memory usage widget
+    INDEX=4;
+    WIDGET[$INDEX]=$(/usr/bin/free -h | awk -v glyph="$glyph_memory" '/^Mem:/ {print glyph " " $3}')
+
+    # CPU temp widget
+#    INDEX=5;
+#    WIDGET[$INDEX]=$(/usr/bin/sensors | awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')
+
+    # Stick all the widgets together into a line
+    build_bar
+}
+
+
+write_bar() { \
+    # Remove the first two characters of statusbar (leftover of the delimiter)
+    STATUSBAR="${BAR_PREFIX}${STATUSBAR:2}"
+    xsetroot -name "$(echo "${STATUSBAR}${ENDDELIMITER}" | tr -d '\n')" &
+    wait
+}
+
+
+# Show the constructed statusbar (only refresh set2)
+refresh_bar_sigtrap() { \
+    refresh_widgets_set2
+    write_bar
+}
+
+
+# Show the constructed statusbar
+refresh() { \
+    refresh_widgets_set1
+    write_bar
+}
+
+
+# Refresh the statusbar every 2 seconds
+while true ; do
+    refresh
+    sleep 5 &
+    wait
+done

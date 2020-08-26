@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# top CPU fuckers
+echo "   ~~~ TOP CPU ~~~   "
+echo ""
+ps axch -o cmd:16,%cpu --sort=-%cpu | head

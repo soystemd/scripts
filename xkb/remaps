@@ -1,0 +1,17 @@
+#!/bin/sh
+#!/bin/sh
+setxkbmap -model pc105 -layout us,ir -option "caps:escape"
+
+# set key repeat rate
+xset r rate 300 50
+
+# turn off key repeat for media keys
+xset -r 121
+xset -r 122
+xset -r 123
+
+# disable mouse acceleration
+xset m 0 0
+
+# map the menu button to right super
+xmodmap -e 'keycode 135 = Super_R'

@@ -1,0 +1,102 @@
+#!/bin/bash
+# Koonix 2020-08-20 xx 13:49
+
+# TODO:
+# histfilemoddate=$(date -Im -r "$histfile" | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print $1}')
+# exit if any command fails
+# detect if all dirs exist; make them if they don't
+# detect if dotfiles already exist in the package (conflict error)
+# prompt wether they want to overwrite files that alreaday exist
+# move their dotfiles to .cache also (after moving it to package)
+# list packages with -l option
+# choose if recursive or not with -r option
+# ability to go back and reenter the entries at each stage
+# ability to check if a file is stowed
+
+
+# Configuration
+dotfilespath="$HOME/.dotfiles"
+
+
+# Get current dir
+currentdir_rel_to_home=$(pwd | awk -v house="^${HOME}/" '$1~house {print gensub(house, "", 1, $1) "/"}')
+
+
+# Function to setup variables related to history files
+#histsetup=( \
+#    histpath="${XDG_DATA_HOME:-$HOME/.local/share}/stowfless"
+#    mkdir -p "$histpath"
+#    histfileprefix="stowflesshist "
+#    histfilename="${histfileprefix}$(date -Ins | tr ':',',','T' '-',' ' | awk -F '+' '{print $1}')"
+#    histfile="${histpath}/${histfilename}"
+#    echo "package:\n${package}\n\n" > $histfile
+#    echo "$dotfileslist" >> "$histfile"
+#)
+
+
+# Recurcively find files matching the given patterns
+if [ "$1" = "-r" ]; then
+    dotfileslist=$( \
+    for regex in "$@"; do
+        find . -type f -name "$regex"
+    done
+    )
+    echo "Make sure to put quotes around your regex in recursive mode"; echo
+else
+    dotfileslist=$( \
+    for regex in "$@"; do
+        for file in ${regex}; do
+            if [ -f "$file" ];then
+                echo "./${file}"
+            fi
+        done
+    done
+    )
+fi
+
+# Prompt the matches found in previous step
+echo "Matches found:"
+echo; echo "$dotfileslist"
+matchcount=$(echo "$dotfileslist" | wc -l)
+echo; echo "Total of ${matchcount} matches found"
+
+
+# Check if user wants to proceed
+echo; echo "Press Enter to proceed..."; read
+# echo; read -p "Press Enter to proceed..."
+
+
+# Get the package name user wants to store the dotfileslist in
+echo
+echo "Enter name of the package and press enter:"
+read entry
+package=$(echo "$entry" | awk '{print $1}' | sed -e 's/[^A-Za-z0-9._-]//g')
+
+
+echo
+# Print wether the package already exists
+if [ -d "${dotfilespath}/${package}" ]; then
+    echo "Package $package already exist; Dotfiles will be added to this package."
+else
+    echo "Package $package doesn't exist; It will be created."
+fi
+
+
+# Check if user wants to proceed
+echo; echo "Press Enter to proceed..."; read
+# echo; read -p "Press Enter to proceed..."
+
+
+while IFS= read -r dotfile; do
+    dotfile_rel_to_home="${currentdir_rel_to_home}${dotfile:2}"
+    dotfile_current_absolute_path="${HOME}/$dotfile_rel_to_home"
+    dotfile_absolute_path="${dotfilespath}/${package}/${dotfile_rel_to_home}"
+    echo
+    echo "Moving $dotfile_current_absolute_path"
+    echo "To $dotfile_absolute_path"
+    dirtomake="$(echo "$dotfile_absolute_path" | awk 'BEGIN{FS=OFS="/"} {$NF=""; print $0}')"
+    mkdir -p "$dirtomake"
+    mv "$dotfile_current_absolute_path" "$dotfile_absolute_path"
+    cd "$dotfilespath"
+    stow "$package"
+done <<< "$dotfileslist"

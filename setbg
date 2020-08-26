@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# This script does the following:
+#	Run by itself, set the wallpaper (at X start).
+#	If given a file, set that as the new wallpaper.
+#	If given a directory, choose random file in it.
+#	If wal is installed, also generates a colorscheme.
+
+# Location of link to wallpaper link.
+BG_LOCATION="${XDG_DATA_HOME:-$HOME/.local/share/}/bg"
+
+[ -f "$1" ] && ln -sf "$(readlink -f "$1")" "$BG_LOCATION" && notify-send -i "$BG_LOCATION" "Changing wallpaper..."
+
+[ -d "$1" ] && ln -sf "$(find "$(readlink -f "$1")" -iregex '.*.\(jpg\|jpeg\|png\|gif\)' -type f | shuf -n 1)" "$BG_LOCATION" && notify-send -i "$BG_LOCATION" "Random Wallpaper chosen."
+
+# Set backgound using feh.
+feh --no-fehbg --bg-fill "$(readlink -f "$BG_LOCATION")"
+
+#pidof dwm >/dev/null && xdotool key super+F12
+#xwallpaper --zoom "$BG_LOCATION"

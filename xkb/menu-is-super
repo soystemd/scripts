@@ -1,0 +1,5 @@
+#!/bin/sh
+# Koonix 2020-08-23
+
+# Map menu key to right super
+xmodmap -e 'keycode 135 = Super_R'
