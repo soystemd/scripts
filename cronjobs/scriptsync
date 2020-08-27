@@ -10,7 +10,7 @@ histfile="${HOME}/cron-scripts-history.txt"
 date_and_time="$(/usr/bin/date -Is | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print $1}')"
 
 # Write date and time to history.txt
-echo "$date_and_time" > "$histfile" || exit 1
+echo -e "$date_and_time\n" > "$histfile" || exit 1
 
 # Stage all untracked files
 git -C "$repopath" add -A 2>&1 || exit 1
