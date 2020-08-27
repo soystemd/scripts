@@ -4,7 +4,7 @@
 
 # Config
 repopath="${HOME}/.local/bin"
-histfile="${HOME}/cron-dotfiles-history.txt"
+histfile="${HOME}/cron-scripts-history.txt"
 
 # Format date and time to make it beautiful
 date_and_time="$(/usr/bin/date -Is | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print $1}')"

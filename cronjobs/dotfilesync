@@ -3,7 +3,7 @@
 
 
 # Config
-repopath="${HOME}/"
+repopath="${HOME}/.dotfiles"
 histfile="${HOME}/cron-dotfiles-history.txt"
 
 # Format date and time to make it beautiful
