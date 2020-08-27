@@ -1,0 +1,11 @@
+#!/bin/sh
+# Koonix 2020-08-26
+
+# Commit and push all changes to ~/.local/bin scripts.
+cd "${HOME}/.local/bin"
+# Format date and time to make it beautiful
+date_and_time="$(/usr/bin/date -Is | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print " " $1}')"
+# Commit all the changes
+git commit -am "fcron commit at ${date_and_time}"
+# Push
+git push
