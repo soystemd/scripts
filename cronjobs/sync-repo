@@ -3,8 +3,17 @@
 
 
 # Config
-repopath="${HOME}/.dotfiles"
+repopath="$1"
 histfile="${HOME}/cron-dotfiles-history.txt"
+
+if [ -z "$repopath" ]; then
+    echo "ERROR: no args"; exit 1
+fi
+
+# Exit if not a git repo
+if [ -d "${repopath}/.git" ]; then
+    exit 1
+fi
 
 # Format date and time to make it beautiful
 date_and_time="$(/usr/bin/date -Is | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print $1}')"
@@ -13,13 +22,13 @@ date_and_time="$(/usr/bin/date -Is | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $
 echo -e "$date_and_time\n" > "$histfile" || exit 1
 
 # Stage all untracked files
-git -C "$repopath" add -A 2>&1 || exit 1
+git -C "$repopath" add -A 2>&1 || exit 0
 
 # Commit all the changes and append output to history.txt
-git -C "$repopath" commit -am "fcron commit at ${date_and_time}" >> "$histfile" 2>&1 || exit 1
+git -C "$repopath" commit -am "fcron commit at ${date_and_time}" >> "$histfile" 2>&1 || exit 0
 
 # Add newline in history.txt
 echo >> "$histfile" || exit 1
 
 # Push
-git -C "$repopath" push >> "$histfile" 2>&1 || exit 1
+git -C "$repopath" push >> "$histfile" 2>&1 || exit 0
