@@ -14,6 +14,8 @@ glyph_speaker=""
 glyph_memory=""
 glyph_temp=""
 glyph_time=""
+glyph_geoip=""
+#glyph_geoip=""
 
 
 # Trap for updating the statusbar at will
@@ -26,7 +28,7 @@ declare -a WIDGET
 
 # Stick all the widgets together into a line
 build_bar() { \
-    STATUSBAR=$(for i in {4..1}
+    STATUSBAR=$(for i in {5..1}
     do
         echo "$DELIMITER"
         echo "${WIDGET[$i]}"
@@ -68,12 +70,16 @@ refresh_widgets_set1() { \
     # Volume widget
     refresh_widgets_set2
 
-    # Memory usage widget
+    # GeoIP widget
     INDEX=4;
+    WIDGET[$INDEX]=$(geoiplookup "$(curl -s ifconfig.me)" | awk -v glyph="$glyph_geoip" '/^GeoIP/ {gsub(/,/, "", $4); print glyph " " $4}')
+
+    # Memory usage widget
+    INDEX=5;
     WIDGET[$INDEX]=$(/usr/bin/free -h | awk -v glyph="$glyph_memory" '/^Mem:/ {print glyph " " $3}')
 
     # CPU temp widget
-#    INDEX=5;
+#    INDEX=6;
 #    WIDGET[$INDEX]=$(/usr/bin/sensors | awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')
 
     # Stick all the widgets together into a line
