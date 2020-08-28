@@ -8,14 +8,13 @@ DELIMITER=" ] [ "
 ENDDELIMITER=" ]"
 BAR_PREFIX=""
 # Glyphs/Emojis
-glyph_keyboard=""
 glyph_headphone=""
+glyph_keyboard=""
 glyph_speaker=""
 glyph_memory=""
+glyph_geoip=""
 glyph_temp=""
 glyph_time=""
-glyph_geoip=""
-#glyph_geoip=""
 
 
 # Trap for updating the statusbar at will
@@ -65,18 +64,21 @@ refresh_widgets_set1() { \
 
     # Time and date widget
     INDEX=1;
-    WIDGET[$INDEX]=$(echo -e "$glyph_time"; /usr/bin/date -Im | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print " " $1}')
+    WIDGET[$INDEX]=$(echo -e "$glyph_time"; /usr/bin/date -Im | \
+        awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print " " $1}')
 
     # Volume widget
     refresh_widgets_set2
 
-    # GeoIP widget
-    INDEX=4;
-    WIDGET[$INDEX]=$(geoiplookup "$(curl -s ifconfig.me)" | awk -v glyph="$glyph_geoip" '/^GeoIP/ {gsub(/,/, "", $4); print glyph " " $4}')
-
     # Memory usage widget
+    INDEX=4;
+    WIDGET[$INDEX]=$(/usr/bin/free -h | \
+        awk -v glyph="$glyph_memory" '/^Mem:/ {print glyph " " $3}')
+
+    # GeoIP widget
     INDEX=5;
-    WIDGET[$INDEX]=$(/usr/bin/free -h | awk -v glyph="$glyph_memory" '/^Mem:/ {print glyph " " $3}')
+    WIDGET[$INDEX]=$(geoiplookup "$(curl -s ifconfig.me)" | \
+        awk -v glyph="$glyph_geoip" '/^GeoIP/ {gsub(/,/, "", $4); print glyph " " tolower($4)}')
 
     # CPU temp widget
 #    INDEX=6;
