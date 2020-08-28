@@ -3,10 +3,12 @@
 
 
 # Configuration
+# Bar update interval
+interval=5
 # The delimiter character(s) between widgets
-DELIMITER=" ] [ "
-ENDDELIMITER=" ]"
-BAR_PREFIX=""
+delimiter=" ] [ "
+enddelimiter=" ]"
+bar_prefix=""
 # Glyphs/Emojis
 glyph_headphone=""
 glyph_keyboard=""
@@ -19,6 +21,7 @@ glyph_time=""
 
 # Trap for updating the statusbar at will
 trap 'refresh_bar_sigtrap' SIGTRAP
+trap 'refresh_bar_sigalrm' SIGALRM
 
 
 # Declare the array
@@ -27,13 +30,21 @@ declare -a WIDGET
 
 # Stick all the widgets together into a line
 build_bar() { \
-    STATUSBAR=$(for i in {5..1}
+    statusbar=$(for i in {6..1}
     do
-        echo "$DELIMITER"
+        echo "$delimiter"
         echo "${WIDGET[$i]}"
     done)
 }
 
+
+# Construct the statusbar while updating only some of the widgets
+refresh_widgets_set3() { \
+
+    # Netspeed widget
+    INDEX=5;
+    WIDGET[$INDEX]=$(netspeed enp3s0 | awk '{print $2 "" $6 "KB"}')
+}
 
 # Construct the statusbar while updating only some of the widgets
 refresh_widgets_set2() { \
@@ -43,16 +54,16 @@ refresh_widgets_set2() { \
     WIDGET[$INDEX]=$(echo "$glyph_keyboard"; xkblayout-state print " %s"; echo)
 
     # Check if audio is playing through headphones or speakers
-    CURRENTSINK=$(vol-getcurrentsinkname)
-    if [ "$CURRENTSINK" = "analog-stereo" ]
+    currentsink=$(vol-getcurrentsinkname)
+    if [ "$currentsink" = "analog-stereo" ]
     then
-        SINKICON="$glyph_headphone"
+        sinkicon="$glyph_headphone"
     else
-        SINKICON="$glyph_speaker"
+        sinkicon="$glyph_speaker"
     fi
     # Volume widget
     INDEX=3;
-    WIDGET[$INDEX]=$(echo "${SINKICON} "; vol-getcurrentvolumeandmute)
+    WIDGET[$INDEX]=$(echo "${sinkicon} "; vol-getcurrentvolumeandmute)
 
     # Stick all the widgets together into a line
     build_bar
@@ -75,14 +86,19 @@ refresh_widgets_set1() { \
     WIDGET[$INDEX]=$(/usr/bin/free -h | \
         awk -v glyph="$glyph_memory" '/^Mem:/ {print glyph " " $3}')
 
+    # Netspeed widget
+    refresh_widgets_set3
+
     # GeoIP widget
-    INDEX=5;
+    INDEX=6;
     WIDGET[$INDEX]=$(geoiplookup "$(curl -s ifconfig.me)" | \
-        awk -v glyph="$glyph_geoip" '/^GeoIP/ {gsub(/,/, "", $4); print glyph " " tolower($4)}')
+        awk -v glyph="$glyph_geoip" '/^GeoIP/ {gsub(/,/, "", $4); \
+        print glyph " " tolower($4)}')
 
     # CPU temp widget
 #    INDEX=6;
-#    WIDGET[$INDEX]=$(/usr/bin/sensors | awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')
+#    WIDGET[$INDEX]=$(/usr/bin/sensors | \
+#       awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')
 
     # Stick all the widgets together into a line
     build_bar
@@ -91,8 +107,8 @@ refresh_widgets_set1() { \
 
 write_bar() { \
     # Remove the first two characters of statusbar (leftover of the delimiter)
-    STATUSBAR="${BAR_PREFIX}${STATUSBAR:2}"
-    xsetroot -name "$(echo "${STATUSBAR}${ENDDELIMITER}" | tr -d '\n')" &
+    statusbar="${bar_prefix}${statusbar:2}"
+    xsetroot -name "$(echo "${statusbar}${enddelimiter}" | tr -d '\n')" &
     wait
 }
 
@@ -114,6 +130,6 @@ refresh() { \
 # Refresh the statusbar every 2 seconds
 while true ; do
     refresh
-    sleep 5 &
+    sleep "$interval" &
     wait
 done
