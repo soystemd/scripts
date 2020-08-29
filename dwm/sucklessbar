@@ -114,11 +114,17 @@ write_bar() { \
 
 
 # Show the constructed statusbar (only refresh set2)
+refresh_bar_sigalrm() { \
+    refresh_widgets_set3
+    write_bar
+}
+
+
+# Show the constructed statusbar (only refresh set3)
 refresh_bar_sigtrap() { \
     refresh_widgets_set2
     write_bar
 }
-
 
 # Show the constructed statusbar
 refresh() { \
