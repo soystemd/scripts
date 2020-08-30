@@ -1,6 +1,5 @@
 #!/bin/sh
-
-# entr command to run `queueandnotify` when newsboat queue is changed
+# enter command to run `queueandnotify` when newsboat queue is changed
 
 [ "$(pgrep -x "$(basename "$0")" | wc -l)" -gt 2 ] && exit
 

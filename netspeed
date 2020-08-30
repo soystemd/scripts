@@ -1,7 +1,7 @@
 #!/bin/sh
+# Prints current bandwidth usage.
 
 # Check net interface
-
 SLP=1 # display / sleep interval
 DEVICE=$1
 IS_GOOD=0
@@ -13,14 +13,11 @@ for GOOD_DEVICE in `grep \: /proc/net/dev | awk -F: '{print $1}'`; do
 done
 if [ $IS_GOOD -eq 0 ]; then
   echo "Device not found. Should be one of these:"
-  grep ":" /proc/net/dev | awk -F: '{print $1}' | sed s@\ @@g 
+  grep ":" /proc/net/dev | awk -F: '{print $1}' | sed s@\ @@g
   exit 1
 fi
 
-
-
 # Set variables
-
 LINE=`grep $1 /proc/net/dev | sed s/.*://`;
 RECEIVED1=`echo $LINE | awk '{print $1}'`
 TRANSMITTED1=`echo $LINE | awk '{print $9}'`

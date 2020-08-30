@@ -1,13 +1,15 @@
 #!/bin/bash
 # Koonix 2020-08-23
-
+# This script be responsible for me statusbar.
 
 # Configuration
 # Bar update interval
 interval=5
 # The delimiter character(s) between widgets
 delimiter=" ] [ "
+# The half-delimiter at the end of the bar
 enddelimiter=" ]"
+# Whatever you want to show up at the beginning of the bar
 bar_prefix=""
 # Glyphs/Emojis
 glyph_headphone=""
@@ -19,31 +21,25 @@ glyph_temp=""
 glyph_time=""
 
 
-# Trap for updating the statusbar at will
-trap 'refresh_bar_sigtrap' SIGTRAP
-trap 'refresh_bar_sigalrm' SIGALRM
 
 
-# Declare the array
-declare -a WIDGET
+# Construct the statusbar
+refresh_widgets_set1() { \
 
+    # Time and date widget
+    INDEX=1;
+    WIDGET[$INDEX]=$(widget_time)
 
-# Stick all the widgets together into a line
-build_bar() { \
-    statusbar=$(for i in {6..1}
-    do
-        echo "$delimiter"
-        echo "${WIDGET[$i]}"
-    done)
-}
+    # Volume widget
+    refresh_widgets_set2
 
+    # Memory usage widget
+    INDEX=4;
+    WIDGET[$INDEX]=$(widget_mem)
 
-# Construct the statusbar while updating only some of the widgets
-refresh_widgets_set3() { \
-
-    # Netspeed widget
+    # GeoIP widget
     INDEX=5;
-    WIDGET[$INDEX]=$(netspeed enp3s0 | awk '{print $2 "" $6 "KB"}')
+    WIDGET[$INDEX]=$(widget_geoip)
 }
 
 # Construct the statusbar while updating only some of the widgets
@@ -51,8 +47,32 @@ refresh_widgets_set2() { \
 
     # Keyboard layout widget
     INDEX=2;
-    WIDGET[$INDEX]=$(echo "$glyph_keyboard"; xkblayout-state print " %s"; echo)
+    WIDGET[$INDEX]=$(widget_kb_layout)
 
+    # Audio widget
+    INDEX=3;
+    WIDGET[$INDEX]=$(widget_audio)
+}
+
+
+
+
+# Widget that shows time and date.
+widget_time() { \
+    echo "$(/usr/bin/date -Im | \
+        awk -v glyph="$glyph_time" 'BEGIN{FS=OFS="+"} \
+        {gsub(/T/, " xx ", $1); print glyph " " $1}')"
+}
+
+
+# Widget that shows the current keyboard layout.
+widget_kb_layout() { \
+    echo "$(echo "$glyph_keyboard"; xkblayout-state print " %s"; echo)"
+}
+
+
+# Widget that shows some audio related stuff.
+widget_audio() { \
     # Check if audio is playing through headphones or speakers
     currentsink=$(vol-getcurrentsinkname)
     if [ "$currentsink" = "analog-stereo" ]
@@ -61,50 +81,47 @@ refresh_widgets_set2() { \
     else
         sinkicon="$glyph_speaker"
     fi
-    # Volume widget
-    INDEX=3;
-    WIDGET[$INDEX]=$(echo "${sinkicon} "; vol-getcurrentvolumeandmute)
 
-    # Stick all the widgets together into a line
-    build_bar
+    echo "$(echo "${sinkicon} "; vol-getcurrentvolumeandmute)"
 }
 
 
-# Construct the statusbar
-refresh_widgets_set1() { \
+# Widget that shows memory usage.
+widget_mem() { \
+    echo "$(/usr/bin/free -h | \
+        awk -v glyph="$glyph_memory" '/^Mem:/ {print glyph " " $3}')"
+}
 
-    # Time and date widget
-    INDEX=1;
-    WIDGET[$INDEX]=$(echo -e "$glyph_time"; /usr/bin/date -Im | \
-        awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print " " $1}')
 
-    # Volume widget
-    refresh_widgets_set2
+# Widget that shows CPU temp.
+widget_cpu() { \
+    echo "$(/usr/bin/sensors | \
+        awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')"
+}
 
-    # Memory usage widget
-    INDEX=4;
-    WIDGET[$INDEX]=$(/usr/bin/free -h | \
-        awk -v glyph="$glyph_memory" '/^Mem:/ {print glyph " " $3}')
 
-    # Netspeed widget
-    refresh_widgets_set3
-
-    # GeoIP widget
-    INDEX=6;
-    WIDGET[$INDEX]=$(geoiplookup "$(curl -s ifconfig.me)" | \
+# Widget that shows your location based on your public ip.
+widget_geoip() { \
+    echo "$(geoiplookup "$(curl -s ifconfig.me)" | \
         awk -v glyph="$glyph_geoip" '/^GeoIP/ {gsub(/,/, "", $4); \
-        print glyph " " tolower($4)}')
-
-    # CPU temp widget
-#    INDEX=6;
-#    WIDGET[$INDEX]=$(/usr/bin/sensors | \
-#       awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')
-
-    # Stick all the widgets together into a line
-    build_bar
+        print glyph " " tolower($4)}')"
 }
 
 
+
+
+# Now for the dirty background detail:
+# Stick all the widgets together into a line
+build_bar() { \
+    local widget_count="${#WIDGET[@]}"
+    statusbar=$(for ((i = "$widget_count"; i > 0; i--))
+    do
+        echo "$delimiter"
+        echo "${WIDGET[$i]}"
+    done)
+}
+
+# Write the bar to dwm via xsetroot
 write_bar() { \
     # Remove the first two characters of statusbar (leftover of the delimiter)
     statusbar="${bar_prefix}${statusbar:2}"
@@ -112,30 +129,26 @@ write_bar() { \
     wait
 }
 
-
-# Show the constructed statusbar (only refresh set2)
-refresh_bar_sigalrm() { \
-    refresh_widgets_set3
+# Refresh and write the constructed statusbar
+refresh_bar() { \
+    refresh_widgets_set1
+    build_bar
     write_bar
 }
 
-
-# Show the constructed statusbar (only refresh set3)
+# Refresh and write the constructed statusbar (but only refresh set2)
 refresh_bar_sigtrap() { \
     refresh_widgets_set2
+    build_bar
     write_bar
 }
 
-# Show the constructed statusbar
-refresh() { \
-    refresh_widgets_set1
-    write_bar
-}
-
+# Trap for updating the statusbar at will
+trap 'refresh_bar_sigtrap' SIGTRAP
 
 # Refresh the statusbar every 2 seconds
 while true ; do
-    refresh
+    refresh_bar
     sleep "$interval" &
     wait
 done

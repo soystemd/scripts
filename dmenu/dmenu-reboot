@@ -1,3 +1,2 @@
 #!/bin/sh
-
 dmenu-prompt "Really Reboot?" "sudo -A reboot"

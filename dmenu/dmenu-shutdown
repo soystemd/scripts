@@ -1,3 +1,2 @@
 #!/bin/sh
-
 dmenu-prompt "Really Shutdown?" "sudo -A poweroff"

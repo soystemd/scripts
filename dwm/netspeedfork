@@ -1,5 +1,0 @@
-#!/bin/sh
-while true; do
-    netspeed > /dev/shm/speed
-    sleep "1.5"
-done
