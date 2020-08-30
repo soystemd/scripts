@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-if [ $# -eq 0 ]; then
+if [ "$#" -eq "0" ]; then
   echo "What manual page do you want?";
   exit 0
 elif ! man -w "$@" > /dev/null; then
@@ -8,4 +8,4 @@ elif ! man -w "$@" > /dev/null; then
   exit 1
 fi
 
-${EDITOR:-nvim} -c "SuperMan $*" -c "set number"
+nvim -c "SuperMan $*" -c "set number"
