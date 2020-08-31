@@ -1,0 +1,5 @@
+#!/bin/sh
+WINEARCH="win32"
+WINEPREFIX="${HOME}/.wine/LTspice"
+exepath="${HOME}/.wine/LTspice/drive_c/Program Files/LTC/LTspiceXVII/XVIIx86.exe"
+setsid -f wine "$exepath" > /dev/null 2>&1
