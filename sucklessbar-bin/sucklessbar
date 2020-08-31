@@ -6,51 +6,50 @@
 # Bar update interval
 interval=5
 # The delimiter character(s) between widgets
-delimiter=" ] [ "
+delimiter=" ][ "
 # The half-delimiter at the end of the bar
 enddelimiter=" ]"
 # Whatever you want to show up at the beginning of the bar
-bar_prefix=""
+bar_prefix=" "
 # Glyphs/Emojis
 glyph_headphone=""
 glyph_keyboard=""
 glyph_speaker=""
 glyph_memory=""
-glyph_geoip=""
+glyph_geoip=""
 glyph_temp=""
 glyph_time=""
-
 
 
 
 # Construct the statusbar
 refresh_widgets_set1() { \
 
+    INDEX=1
     # Time and date widget
-    INDEX=1;
     WIDGET[$INDEX]=$(widget_time)
 
     # Volume widget
     refresh_widgets_set2
 
-    # Memory usage widget
-    INDEX=4;
-    WIDGET[$INDEX]=$(widget_mem)
-
+    INDEX=4
     # GeoIP widget
-    INDEX=5;
     WIDGET[$INDEX]=$(widget_geoip)
+
+    INDEX=5
+    # Memory usage widget
+    WIDGET[$INDEX]=$(widget_mem)
 }
 
 # Construct the statusbar while updating only some of the widgets
 refresh_widgets_set2() { \
 
+    INDEX=2
     # Keyboard layout widget
-    INDEX=2;
     WIDGET[$INDEX]=$(widget_kb_layout)
 
+    INDEX=3
     # Audio widget
-    INDEX=3;
     WIDGET[$INDEX]=$(widget_audio)
 }
 
@@ -59,20 +58,23 @@ refresh_widgets_set2() { \
 
 # Widget that shows time and date.
 widget_time() { \
+
     echo "$(/usr/bin/date -Im | \
         awk -v glyph="$glyph_time" 'BEGIN{FS=OFS="+"} \
-        {gsub(/T/, " xx ", $1); print glyph " " $1}')"
+        {gsub(/T/, " x ", $1); print glyph " " $1}')"
 }
 
 
 # Widget that shows the current keyboard layout.
 widget_kb_layout() { \
-    echo "$(echo "$glyph_keyboard"; xkblayout-state print " %s"; echo)"
+
+    echo "$glyph_keyboard"; echo "$(xkblayout-state print " %s")"; echo
 }
 
 
 # Widget that shows some audio related stuff.
 widget_audio() { \
+
     # Check if audio is playing through headphones or speakers
     currentsink=$(vol-getcurrentsinkname)
     if [ "$currentsink" = "analog-stereo" ]
@@ -82,12 +84,13 @@ widget_audio() { \
         sinkicon="$glyph_speaker"
     fi
 
-    echo "$(echo "${sinkicon} "; vol-getcurrentvolumeandmute)"
+    echo "${sinkicon} "; echo "$(vol-getcurrentvolumeandmute)"
 }
 
 
 # Widget that shows memory usage.
 widget_mem() { \
+
     echo "$(/usr/bin/free -h | \
         awk -v glyph="$glyph_memory" '/^Mem:/ {print glyph " " $3}')"
 }
@@ -95,6 +98,7 @@ widget_mem() { \
 
 # Widget that shows CPU temp.
 widget_cpu() { \
+
     echo "$(/usr/bin/sensors | \
         awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')"
 }
@@ -102,9 +106,16 @@ widget_cpu() { \
 
 # Widget that shows your location based on your public ip.
 widget_geoip() { \
-    echo "$(geoiplookup "$(curl -s ifconfig.me)" | \
-        awk -v glyph="$glyph_geoip" '/^GeoIP/ {gsub(/,/, "", $4); \
-        print glyph " " tolower($4)}')"
+
+    local ip="$(curl -s --retry 1 ifconfig.me || echo "")"
+
+    if [ "$ip" = "" ]; then
+        echo "$ip"
+    else
+        echo "$(geoiplookup "$ip" | \
+            awk -v glyph="$glyph_geoip" '/^GeoIP/ {gsub(/,/, "", $4); \
+            print glyph " " tolower($4)}')"
+    fi
 }
 
 
@@ -124,8 +135,8 @@ build_bar() { \
 # Write the bar to dwm via xsetroot
 write_bar() { \
     # Remove the first two characters of statusbar (leftover of the delimiter)
-    statusbar="${bar_prefix}${statusbar:2}"
-    xsetroot -name "$(echo "${statusbar}${enddelimiter}" | tr -d '\n')" &
+    statusbar="${bar_prefix}${statusbar:2}${enddelimiter}"
+    xsetroot -name "$(echo "$statusbar" | tr -d '\n')" &
     wait
 }
 
