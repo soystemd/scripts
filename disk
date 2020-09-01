@@ -1,0 +1,13 @@
+#!/bin/sh
+# Koonix 2020-09-01
+# This script shows all mounted disks and their free/used disk space in GB.
+
+# Print the header
+echo -e "\nDisk                           Used                Free        Total\n"
+
+# This is about the bulkiest awk you'll ever see lol
+df -T | awk '/^\/dev\/sd/ \
+    {printf "%-30s %-6.2f %2s %1s %-3s %1s %-6.2f %2s %-6.2f %3s\n",
+    $7, $4/(1024*1024), "GB", "(", $6,") |", $5/(1024*1024), "GB |",
+    ($4+$5)/(1024*1024), "GB   "}'
+echo
