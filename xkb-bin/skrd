@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Return error if not run as root.
+if [ "$(id -u)" != "0" ]
+then
+	echo "ERROR: This script must be run as root."
+	exit 1
+fi
+
+# Run skrd in the background
+setsid -f USER=koonix skr > /dev/null 2>&1
