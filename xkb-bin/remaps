@@ -1,15 +1,19 @@
 #!/bin/sh
 
-# Set layout and model, also map capslock to escape
-setxkbmap -model pc105 -layout us,ir -option "caps:escape"
+# Set keyboard layout and model
+setxkbmap -model pc105 -layout us,ir
 
-# Left super acts as escape if pressed and released
-# (Capslock is mapped to super via skr)
 killall xcape 2>/dev/null
+# Left super acts as escape if pressed and released
+# (Capslock is mapped to left super via skr)
 xcape -e 'Super_L=Escape'
 
-# Set key repeat rate
-xset r rate 300 50
+# Advanced: Left ctrl acts as space if pressed and released
+# (Space is mapped to left ctrl via skr)
+# xcape -e 'Super_L=Escape;Control_L=space'
+
+# Advanced: Set key repeat rate
+# xset r rate 300 50
 
 # Turn off key repeat for media keys
 xset -r 121
