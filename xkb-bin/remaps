@@ -3,6 +3,9 @@
 # Set keyboard layout and model
 setxkbmap -model pc105 -layout us,ir
 
+# Remap one of my mouse's side buttons to middle click
+xmodmap -e "pointer = 1 9 3 4 5 6 7 8 2 10"
+
 killall xcape 2>/dev/null
 # Left super acts as escape if pressed and released
 # (Capslock is mapped to left super via skr)
