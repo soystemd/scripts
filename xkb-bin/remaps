@@ -6,9 +6,9 @@ setxkbmap -model pc105 -layout us,ir
 # Remap one of my mouse's side buttons to middle click
 xmodmap -e "pointer = 1 9 3 4 5 6 7 8 2 10"
 
-killall xcape 2>/dev/null
 # Left super acts as escape if pressed and released
 # (Capslock is mapped to left super via skr)
+killall xcape 2>/dev/null
 xcape -e 'Super_L=Escape'
 
 # Advanced: Left ctrl acts as space if pressed and released
@@ -24,4 +24,4 @@ xset -r 122
 xset -r 123
 
 # Disable mouse acceleration
-xset m 0 0
+xinput --set-prop 'pointer:G-SPY USB Gaming Mouse' 'libinput Accel Profile Enabled' 0, 1

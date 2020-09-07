@@ -1,11 +1,11 @@
 #!/bin/sh
 
 if [ "$#" -eq "0" ]; then
-  echo "What manual page do you want?";
+  echo "What manual do you want bruv?";
   exit 0
 elif ! man -w "$@" > /dev/null; then
-  # Check that manpage exists to prevent visual noise.
+  # Check if that manpage exists to prevent visual noise or whatever.
   exit 1
 fi
 
-nvim -c "SuperMan $*" -c "set number"
+"$HOME/.local/bin/nvim" -c "SuperMan $*" -c "set number"

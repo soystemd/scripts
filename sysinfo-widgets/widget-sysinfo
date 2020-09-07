@@ -1,9 +1,0 @@
-#!/bin/sh
-
-#temps/mem together:
-WDGTCPU="CPU:$(sensors | awk '/^Core 0/ {print $3}')"
-WDGTGPU="GPU:$(sensors | awk '/^temp1/ {print $2}' | awk 'NR==2')"
-WDGTMEM="MEM:$(free -h | awk '/^Mem:/ {print $3 "/" $2}')"
-WDGTSWP="SWAP:$(free -h | awk '/^Swap:/ {print $3 "/" $2}')"
-
-echo "$WDGTCPU  ~  $WDGTGPU  ~  $WDGTMEM  ~  $WDGTSWP"
