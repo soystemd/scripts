@@ -1,6 +1,9 @@
 #!/bin/bash
 # Koonix 2020-08-19
 
+# Config
+top_level_mount_dir="${HOME}/Mount/MTP"
+
 # Functions
 # Delete temp files
 cleanup() { \
@@ -25,8 +28,8 @@ trap "" SIGABRT
 
 # Clean all the leftover mtp directory crap from previous runs
 echo; echo "Cleaning previous mount points..."
-sudo umount "${HOME}"/mount/* > /dev/null 2>&1
-rmdir "${HOME}"/mount/* > /dev/null 2>&1
+sudo umount "$top_level_mount_dir"/* > /dev/null 2>&1
+rmdir "$top_level_mount_dir"/* > /dev/null 2>&1
 
 # Query mtp devices to assert the precense of this master device (the linguistics tho lol)
 echo; echo "Pinging all available devices..."
@@ -90,7 +93,7 @@ do
 
     device_id_no_comma=${device_id//,}
     mount_dir_name="${device_vendor}${device_id_no_comma}"
-    mount_dir="${HOME}/mount/${mount_dir_name}"
+    mount_dir="${top_level_mount_dir}/${mount_dir_name}"
     mkdir -p "$mount_dir"
 
     echo
