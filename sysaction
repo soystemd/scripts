@@ -4,10 +4,10 @@
 # A dmenu wrapper script for system functions.
 
 cmds="\
- lock		lock
-⏻ kill xorg	dmenu-killxorg
-⏻ shutdown	dmenu-shutdown
- reboot	dmenu-reboot"
+ Lock		lock
+⏻ Kill Xorg	dmenu-killxorg
+⏻ Shutdown	dmenu-shutdown
+ Reboot	dmenu-reboot"
 
 choice="$(echo "$cmds" | cut -d'	' -f 1 | dmenu)" || exit 1
 `echo "$cmds" | grep "^$choice	" | cut -d '	' -f2-`

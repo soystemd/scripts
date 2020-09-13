@@ -1,2 +1,10 @@
 #!/bin/sh
+
+cmds="\
+ Default	:
+ Windows	sudo -A grub-reboot Windows"
+
+choice="$(echo "$cmds" | cut -d'	' -f 1 | dmenu)" || exit 1
+`echo "$cmds" | grep "^$choice	" | cut -d '	' -f2-`
+
 dmenu-prompt "Really Reboot?" "sudo -A reboot"
