@@ -8,4 +8,4 @@ elif ! man -w "$@" > /dev/null; then
   exit 1
 fi
 
-"$HOME/.local/bin/nvim" -c "SuperMan $*" -c "set number"
+"$EDITOR" -c "SuperMan $*" -c "set number"
