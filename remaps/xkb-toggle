@@ -1,0 +1,10 @@
+#!/bin/sh
+# Koonix 2020-08-21
+
+# Toggle keyboard layout between us and ir.
+layout=$(xkblayout-state print "%s")
+if [ "$layout" = "us" ]; then
+    setxkbmap -layout ir
+else
+    setxkbmap -layout us
+fi

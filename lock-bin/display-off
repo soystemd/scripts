@@ -1,9 +1,0 @@
-#!/bin/sh
-# Koonix 2020-08-19
-
-xset dpms force off
-sleep 0.2 && xset dpms force off
-sleep 0.2 && xset dpms force off
-sleep 0.2 && xset dpms force off
-sleep 0.2 && xset dpms force off
-sleep 0.2 && xset dpms force off

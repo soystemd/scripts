@@ -1,7 +1,0 @@
-#!/bin/sh
-# Koonix 2020-08-19
-
-# Send SIGTRAP signal to sucklessbar script, which will run a specified function
-# upon receiving this signal.
-
-pkill -SIGTRAP sucklessbar > /dev/null 2>&1

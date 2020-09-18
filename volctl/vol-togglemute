@@ -1,0 +1,4 @@
+#!/bin/sh
+# Koonix 2020-08-19
+
+pactl set-sink-mute "$(vol-getcurrentsinkid)" toggle

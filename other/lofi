@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# Launch lofi hip-hop stream in mpv via youtube-dl via tor via polipo proxy.
+# Usage:
+#     Launch the stream and fork it to background:
+#         lofi
+#     Launch the stream but don't fork to foreground and ouput to stdout:
+#         lofi -f
+#         lofi --foreground
+#     Kill the stream:
+#         lofi -k
+#         lofi --kill
+
+
+# Intercept SIGINT and SIGTERM
+trap lofi_kill 2
+trap lofi_kill 15
+
+main() {
+    if [ "$1" = "-k" ] || [ "$1" = "--kill" ]
+    then
+        lofi_kill
+    elif [ "$1" = "-f" ] || [ "$1" = "--foreground" ]
+    then
+        lofi_foreground
+    else
+        lofi_background
+    fi
+}
+
+# Play lofi but don't fork nothing to background
+lofi_foreground() {
+    lofi_kill
+    polipo &
+    youtube-dl -v --proxy 127.0.0.1:8123 -f 95 -q -o - \
+        "https://www.youtube.com/watch?v=5qap5aO4i9A" | mpv -
+}
+
+# Play lofi and fork all the stuff to background
+lofi_background() {
+    lofi_kill
+    polipo >/dev/null 2>&1 &
+    2>/dev/null youtube-dl --proxy 127.0.0.1:8123 -f 95 -q -o - \
+        "https://www.youtube.com/watch?v=5qap5aO4i9A" | mpv - >/dev/null 2>&1 &
+}
+
+# Kill any leftovers from previous runs
+lofi_kill() {
+    killall youtube-dl >/dev/null 2>&1
+    killall mpv >/dev/null 2>&1
+    killall polipo
+}
+
+main "$@"; exit

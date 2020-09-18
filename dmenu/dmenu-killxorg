@@ -1,0 +1,2 @@
+#!/bin/sh
+dmenu-prompt "Really Kill Xorg?" killall -9 Xorg

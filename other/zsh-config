@@ -1,0 +1,35 @@
+#!/bin/zsh
+
+# Config
+zsh_config_dir="${HOME}/.config/zsh"
+
+# Check if user's shell is zsh
+[ "$SHELL" = "/usr/bin/zsh" ] || (echo "error: your shell is not zsh"; exit 1)
+
+# Help message
+help="Check out the 'zshrice' script to understand what's going on."
+
+# Parse given arguments
+case "$1" in
+
+    zsh | zshrc | .zshrc | rc | rice)
+        $EDITOR "${zsh_config_dir}/.zshrc"
+        ;;
+
+    aliases | alias | al)
+        $EDITOR "${zsh_config_dir}/alias.zsh"
+        ;;
+
+    func | fn | function | functions)
+        $EDITOR "${zsh_config_dir}/function.zsh"
+        ;;
+
+    bm | bookmark | bookmarks)
+        $EDITOR "$BOOKMARKS_FILE"
+        ;;
+
+    *)
+        echo "$help"
+        ;;
+esac
+exit 0
