@@ -4,7 +4,12 @@
 kill_stuff() {
     killall youtube-dl >/dev/null 2>&1
     killall mpv >/dev/null 2>&1
+    killall polipo
 }
+
+# Intercept SIGINT and SIGTERM
+trap kill_stuff 2
+trap kill_stuff 15
 
 # If got the kill command, just kill the stream and exit
 if [ "$1" = "k" ] || [ "$1" = "kill" ]
@@ -15,5 +20,6 @@ fi
 
 # Play lofi hip hop lmao
 kill_stuff
-2>/dev/null youtube-dl -f 95 -q -o - \
+polipo >/dev/null 2>&1 &
+2>/dev/null youtube-dl --proxy 127.0.0.1:8123 -f 95 -q -o - \
     "https://www.youtube.com/watch?v=5qap5aO4i9A" | mpv - >/dev/null 2>&1 &
