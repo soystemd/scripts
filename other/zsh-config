@@ -12,19 +12,19 @@ help="Check out the 'zshrice' script to understand what's going on."
 # Parse given arguments
 case "$1" in
 
-    zsh | zshrc | .zshrc | rc | rice)
+    zsh | z | zshrc | .zshrc | rc | rice)
         $EDITOR "${zsh_config_dir}/.zshrc"
         ;;
 
-    aliases | alias | al)
+    alias | al | aliases)
         $EDITOR "${zsh_config_dir}/alias.zsh"
         ;;
 
-    func | fn | function | functions)
+    function | func | fn | functions)
         $EDITOR "${zsh_config_dir}/function.zsh"
         ;;
 
-    bm | bookmark | bookmarks)
+    bookmark | bm | bookmarks)
         $EDITOR "$BOOKMARKS_FILE"
         ;;
 
