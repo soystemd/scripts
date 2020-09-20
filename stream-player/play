@@ -1,0 +1,128 @@
+#!/bin/bash
+#
+# Launch a stream in mpv via youtube-dl via tor via polipo proxy.
+#
+# Usage:
+#
+#     Launch the stream and fork it to background:
+#         play <stream name>
+#
+#     Launch the stream but don't fork to foreground and ouput to stdout:
+#         play -f <stream name>
+#         play --foreground <stream name>
+#
+#     Kill the stream:
+#         play -k
+#         play --kill
+
+# Path to playrc file
+playrc_file="${HOME}/.config/play/playrc"
+
+# Main function
+main() {
+
+    [ -z "$*" ] &&\
+        echo "error: give an option or a stream name to play" &&\
+        echo "options:" &&\
+        echo "-f or --foreground to not fork the stream to background" &&\
+        echo "-k or --kill to just kill the already playing stream and exit" &&\
+        return
+
+    if   [ "$1" = "-k" ] || [ "$1" = "--kill" ]; then
+
+        stream_kill
+
+    elif [ "$1" = "-f" ] || [ "$1" = "--foreground" ]; then
+
+        shift
+        play_stream_in "$1" foreground
+
+    else
+
+        play_stream_in "$1" background
+
+    fi
+}
+
+
+#############
+# FUNCTIONS #
+#############
+
+# Take stream name and an option for playing in foreground or background
+play_stream_in() {
+
+        local stream_name="$1"
+        local stream_url=$(stream_name_to_url "$stream_name")
+
+        check_stream_url "$stream_url" || return
+        stream_kill
+        echo "playing: $stream_name"
+        echo "link: $stream_url"
+
+        [ "$2" = "background" ] && stream_back "$stream_url" && return
+
+        stream_fore "$stream_url"
+}
+
+# Play the given stream url but don't fork nothing to background
+stream_fore() {
+    polipo &
+    youtube-dl -v --proxy 127.0.0.1:8123 -f 95 -q -o - \
+        "$1" | mpv -
+}
+
+# Play the given stream url and fork all the stuff to background
+stream_back() {
+    polipo >/dev/null 2>&1 &
+    2>/dev/null youtube-dl --proxy 127.0.0.1:8123 -f 95 -q -o - \
+        "$1" | mpv - >/dev/null 2>&1 &
+}
+
+# Kill any leftovers from previous runs
+stream_kill() {
+    [ "$1" = "quiet" ] || echo "killing previous stream..."
+    killall -q youtube-dl
+    killall -q mpv
+    killall -q polipo
+}
+
+# Lookup a stream name in .config/play/playrc and return the stream url
+stream_name_to_url() {
+
+    local stream_name="$1";
+
+    [ -z "$stream_name" ] && return
+
+    local stream_url="$(awk 'BEGIN{FS=OFS="#"}; {print $1}' "$playrc_file" |\
+        awk NF | awk -v pattern="$stream_name" '$1~pattern {print $2}')"
+
+    echo "$stream_url"
+}
+
+# Return an error message and return code of 1 if the given url is empty.
+check_stream_url() {
+        local stream_url="$1"
+        [ -z "$stream_url" ] &&\
+            echo "error: given stream name doesn't exist in playrc" >&1 &&\
+            return 1
+        return 0
+}
+
+# Check if the given file is readable/accessible
+check_readable() {
+    [ ! -r "$1" ] &&\
+        echo "error: playrc file doesn't exist or unreadable" >&1 &&\
+        return 1
+    return 0
+}
+
+check_readable "$playrc_file" || exit
+
+# Intercept SIGINT and SIGTERM
+trap stream_kill 2
+trap stream_kill 15
+
+# Run the main function
+main "$@"
+exit

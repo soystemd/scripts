@@ -1,0 +1,2 @@
+#!/bin/sh
+setsid -f "/usr/bin/safeeyes" > /dev/null 2>&1

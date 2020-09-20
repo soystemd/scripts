@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Config
+ftp_ip="192.168.1.15:9999"
+
+main() {
+    # Big boy ethernal while loop
+    while true; do
+
+    clear
+    helper_text
+    read -p "Command: " entered_command
+
+    case "$entered_command" in
+        m)
+            ftp_mount
+            continue
+            ;;
+        u)
+            ftp_unmount
+            continue
+            ;;
+        q)
+            exit 0
+            ;;
+        *)
+            command_output="Command invalid"
+            ;;
+    esac
+    done
+}
+
+ftp_mount() {
+    command_output="$(\
+        2>&1 curlftpfs -o utf8 "ftp://${ftp_ip}" ~/Mount/FTP &&\
+        echo "FTP Mounted")"
+}
+
+ftp_unmount() {
+    command_output="$(\
+        2>&1 fusermount -u ~/Mount/FTP &&\
+        echo "FTP UnMounted")"
+}
+
+helper_text() {
+echo -e "${command_output}
+
+━━━━━━━━━━━━ Commands ━━━━━━━━━━━
+
+m: mount    u: unmount    q: quit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"
+}
+
+# Run the main function
+main; exit

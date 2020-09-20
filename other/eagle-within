@@ -1,0 +1,11 @@
+#!/bin/sh
+
+break_interval="25"
+minutes_till_next_break="$break_interval"
+
+while true; do
+    sleep 5
+    [ "$(xprintidle)" -lt "30000" ] && run_every_5_sec
+    minutes_till_next_break=$(( minutes_till_next_break - 1 ))
+    echo "$minutes_till_next_break"
+done
