@@ -6,9 +6,9 @@
 # Bar update interval
 interval=5
 # The delimiter character(s) between widgets
-delimiter=" ][ "
+delimiter="\x05 ][ \x06"
 # The half-delimiter at the end of the bar
-enddelimiter=" ]"
+enddelimiter="\x05 ]"
 # Whatever you want to show up at the beginning of the bar
 bar_prefix=" "
 # Glyphs/Emojis
@@ -155,9 +155,9 @@ build_bar() { \
 
 # Write the bar to dwm via xsetroot
 write_bar() { \
-    # Remove the first two characters of statusbar (leftover of the delimiter)
-    statusbar="${bar_prefix}${statusbar:2}${enddelimiter}"
-    xsetroot -name "$(echo "$statusbar" | tr -d '\n')" &
+    # Remove the first six characters of statusbar (leftover of the delimiter)
+    statusbar="${bar_prefix}${statusbar:6}${enddelimiter}"
+    xsetroot -name "$(echo -e "$statusbar" | tr -d '\n')" &
     wait
 }
 

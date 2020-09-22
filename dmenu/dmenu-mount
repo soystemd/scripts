@@ -4,12 +4,12 @@
 # A dmenu wrapper script for system functions.
 
 # Config
-prompt_text="Select Action:"
+prompt_text="Mount What?"
 
 cmds="\
-USB		mount-usb
-Android-MTP	mount-mtp
-Android-FTP	mount-ftp"
+ USB		mount-usb
+ MTP	mount-mtp
+ﴓ FTP	mount-ftp"
 
 choice="$(echo "$cmds" | cut -d'	' -f 1 | dmenu -p "$prompt_text")" || exit 1
 `echo "$cmds" | grep "^$choice	" | cut -d '	' -f2-`

@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# Config
+break_interval="26"
+
+main() {
+while true; do
+    sleep 5
+    if [ "$(xprintidle)" -le "60000" ]; then
+        run_every_5_sec
+    else
+        minutes_till_next_break=$(( break_interval / 2 ))
+    fi
+done
+}
+
+# Init
+minutes_till_next_break="$break_interval"
+five_secs_intervals_till_next_min="12"
+
+take_a_break() {
+    display-off &
+}
+
+run_every_5_sec() {
+    five_secs_intervals_till_next_min=$(( five_secs_intervals_till_next_min - 1 ))
+    if [ "$five_secs_intervals_till_next_min" -le "0" ]; then
+        five_secs_intervals_till_next_min="12"
+        run_every_min
+    fi
+}
+
+run_every_min() {
+    minutes_till_next_break=$(( minutes_till_next_break - 1 ))
+    if [ "$minutes_till_next_break" -le "0" ]; then
+        minutes_till_next_break="$break_interval"
+        koonix-lock
+    fi
+
+}
+
+main; exit
