@@ -1,0 +1,202 @@
+#!/bin/bash
+
+# Config
+opacity_transparent="0xe5ffffff"
+opacity_opaque="0xffffffff"
+
+######
+main() {
+
+    if [ -z "$1" ] &&
+       [ -z "$2" ]; then
+       print_help_and_exit 0
+    fi
+
+    window_class="$2"
+
+    case "$1" in
+        -0 | -1 | -t | -r | -i)
+            [ -z "$2" ] && print_help_and_exit 1
+            ;;
+    esac
+
+    case "$1" in
+        -0)
+            set_all_windows_transparent
+            ;;
+        -1)
+            set_all_windows_opaque
+            ;;
+        -t)
+            toggle_transparency_all_windows
+            ;;
+        -r)
+            reapply_transparency_all_windows
+            ;;
+        -i)
+            opaque_init
+            ;;
+        -c)
+            opaque_cleanup
+            ;;
+        -h | --help)
+            print_help_and_exit 0
+            ;;
+    esac
+}
+######
+
+
+
+######
+set_all_windows_opaque() {
+    set_opacity_all_windows "$opacity_opaque"
+    exit_if_not_initialized no-print-error
+    set_status opaque
+}
+
+set_all_windows_transparent() {
+    set_opacity_all_windows "$opacity_transparent"
+    exit_if_not_initialized no-print-error
+    set_status transparent
+}
+
+toggle_transparency_all_windows() {
+    exit_if_not_initialized # toggling requires initialization
+
+    if [ "$(get_status)" = "opaque" ]; then
+        set_opacity_all_windows "$opacity_transparent"
+        set_status transparent
+        return
+    fi
+
+    set_opacity_all_windows "$opacity_opaque"
+    set_status opaque
+}
+
+reapply_transparency_all_windows() {
+    exit_if_not_initialized # reapplying requires initialization
+
+    if [ "$(get_status)" = "opaque" ]; then
+        set_opacity_all_windows "$opacity_opaque"
+        set_status opaque
+        return
+    fi
+
+    set_opacity_all_windows "$opacity_transparent"
+    set_status transparent
+}
+######
+
+
+
+######
+set_opacity_all_windows() {
+    local window_id_list="$(\
+        xdotool search --class "$window_class")"
+
+    local opacity="$1"
+
+    while IFS= read -r window_id
+    do
+        echo "$window_id"
+        xprop -id "$window_id" -format _NET_WM_WINDOW_OPACITY 32x\
+            -set _NET_WM_WINDOW_OPACITY "$opacity"
+
+    done <<< "$window_id_list"
+}
+######
+
+
+
+######
+opaque_init() {
+    remove_previous_status_files
+    mktemp -q "/tmp/opaque-${USER}-${window_class}-XXXXXX"
+    set_status
+}
+
+opaque_cleanup() {
+    find -P /tmp -maxdepth 1 -name opaque-\* -delete
+}
+
+exit_if_not_initialized() {
+    run_action=0
+    [ -z "$(get_status_file_path)" ] &&\
+        run_action=1 &&\
+    [ "$1" = "no-print-error" ] &&\
+        exit 0
+    [ "$run_action" = "1" ] && error "not initialized"
+}
+
+set_status() {
+    local status_file="$(get_status_file_path)"
+    echo "$1" > "$status_file"
+}
+
+get_status() {
+    local status_file="$(get_status_file_path)"
+    cat "$status_file"
+}
+
+remove_previous_status_files() {
+    local status_file="$(get_status_file_path)"
+    rm -f "$status_file"
+}
+
+get_status_file_path() {
+    local status_file="$(\
+        find -P /tmp -maxdepth 1 -name opaque-${USER}-${window_class}\*)" ||\
+        error "get_status_file_path failed"
+    echo "$status_file"
+}
+######
+
+
+
+######
+error() {
+    echo "error: ${1}"
+    exit 1
+}
+######
+
+
+
+######
+print_help_and_exit() {
+echo $'
+Manipulate the transparency of all windows of the same class
+Requires a compositor to work
+
+    Usage: opaque [OPTION] <WINDOW_CLASS>
+
+Options:
+
+  -0    set all windows transparent
+  -1    set all windows opaque
+
+  -i    initialize; create and set the temp files
+            initialization is required for using the next two options
+
+  -t    toggle transparency for all windows
+  -r    reapply transparency to all [new] windows
+
+  -c    cleanup all the tempfiles;
+            can be used without any other arguments
+
+  -h | --help    print the help message and exit
+'
+exit "$1"
+}
+######
+
+main "$@"
+exit 0
+
+#-po | --set-active-window-opaque-and-preserve-opacity)
+#    set_activewindow_opaque_and_preserve
+#    ;;
+#-pr | --revert-active-window-opacity)
+#    revert_activewindow_opacity
+#    ;;

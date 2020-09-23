@@ -1,7 +1,29 @@
-#!/bin/sh
+#!/bin/bash
 # Koonix 2020-08-19
 
 # Send SIGTRAP signal to sucklessbar script, which will run a specified function
 # upon receiving this signal.
 
-pkill -SIGTRAP sucklessbar > /dev/null 2>&1
+bar_refresh() {
+#   pkill -SIGTRAP sucklessbar > /dev/null 2>&1
+    killall -s SIGTRAP sucklessbar > /dev/null 2>&1
+}
+
+case "$1" in
+    -r)
+        count="$2"
+        interval="$3"
+        for (( i=0; i<count; i++ )); do
+            bar_refresh
+            sleep "$interval"
+        done &
+        ;;
+    -h)
+        echo -e "usage:\e
+            sucklessbar-refresh [-r] <number of refreshes> <interval>"
+        ;;
+    *)
+        bar_refresh
+        ;;
+esac
+exit 0

@@ -24,4 +24,5 @@ xset -r 122
 xset -r 123
 
 # Disable mouse acceleration
-xinput --set-prop 'pointer:G-SPY USB Gaming Mouse' 'libinput Accel Profile Enabled' 0, 1
+xinput --set-prop 'pointer:G-SPY USB Gaming Mouse'\
+    'libinput Accel Profile Enabled' 0, 1

@@ -15,7 +15,7 @@ currentsinkfile="$(find -P /tmp -maxdepth 1 -name volctl\*)"
 # Get the index of sink device
 headphones="$(pactl list short sinks | awk '/analog-stereo/ {print $1}')"
 
-# Make the temp file containing the current sink device
+# Write current sink device to temp file
 echo "analog-stereo" > "$currentsinkfile"
 
 # Set the default device

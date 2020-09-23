@@ -79,8 +79,11 @@ stream_fore() {
 # Play the given stream url and fork all the stuff to background
 stream_back() {
     polipo >/dev/null 2>&1 &
-    2>/dev/null youtube-dl --proxy 127.0.0.1:8123 -f 95 -q -o - \
-        "$1" | mpv - >/dev/null 2>&1 &
+    2>/dev/null youtube-dl -v --proxy 127.0.0.1:8123 -f 95 -q -o - \
+        "$1" | mpv --quiet --no-taskbar-progress - >/dev/null 2>&1 &
+#    mpv --quiet --no-taskbar-progress \
+#        --ytdl-raw-options-append=proxy=127.0.0.1:8123 "$1" |\
+#        xargs -0 notify-send "  Stream Player Error"
 }
 
 # Kill any leftovers from previous runs
@@ -99,7 +102,8 @@ stream_name_to_url() {
     [ -z "$stream_name" ] && return
 
     local stream_url="$(awk 'BEGIN{FS=OFS="#"}; {print $1}' "$stream_list" |\
-        awk NF | awk -v pattern="$stream_name" '$1~pattern {print $2}')"
+        awk NF | awk -v pattern="$stream_name"\
+        '$1~pattern {print $2}')"
 
     echo "$stream_url"
 }
