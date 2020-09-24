@@ -71,16 +71,16 @@ play_stream_in() {
 
 # Play the given stream url but don't fork nothing to background
 stream_fore() {
-    polipo &
-    youtube-dl -v --proxy 127.0.0.1:8123 -f 95 -q -o - \
-        "$1" | mpv -
+    youtube-dl -v -4 --proxy 127.0.0.1:8123 \
+        --cookies "${HOME}/.local/share/ytdl-cookies/youtube.cookie"\
+        -o - "$1" | mpv -v -
 }
 
 # Play the given stream url and fork all the stuff to background
 stream_back() {
-    polipo >/dev/null 2>&1 &
-    2>/dev/null youtube-dl -v --proxy 127.0.0.1:8123 -f 95 -q -o - \
-        "$1" | mpv --quiet --no-taskbar-progress - >/dev/null 2>&1 &
+    2>/dev/null youtube-dl -q -4 --proxy 127.0.0.1:8123 \
+        --cookies "${HOME}/.local/share/ytdl-cookies/youtube.cookie"\
+        -o - "$1" | mpv --quiet --no-term-osd-bar - >/dev/null 2>&1 &
 #    mpv --quiet --no-taskbar-progress \
 #        --ytdl-raw-options-append=proxy=127.0.0.1:8123 "$1" |\
 #        xargs -0 notify-send "  Stream Player Error"
@@ -91,7 +91,6 @@ stream_kill() {
     [ "$1" = "quiet" ] || echo "killing previous stream..."
     killall -q youtube-dl
     killall -q mpv
-    killall -q polipo
 }
 
 # Lookup a stream name in stream list and return the stream url
