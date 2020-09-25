@@ -1,4 +1,2 @@
 #!/bin/sh
-# Restart the tor service
-sudo -A sv restart tor
-sucklessbar-refresh -r 10 1
+sudo -A tor-reset-backend

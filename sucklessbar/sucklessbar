@@ -2,82 +2,127 @@
 # Koonix 2020-08-23
 # This script be responsible for me statusbar.
 
+##############################################################################
 # Configuration
+##############################################################################
+#
 # Bar update interval
-interval=5
+interval=6
+#
 # The delimiter character(s) between widgets
+# The escape sequences \x01 through \x06 represent colors
 delimiter="\x05 ][ \x06"
+#
 # The half-delimiter at the end of the bar
 enddelimiter="\x05 ]"
+#
 # Whatever you want to show up at the beginning of the bar
 bar_prefix=" "
+#
 # Glyphs/Emojis
 glyph_headphone=""
 glyph_keyboard=""
 glyph_speaker=""
 glyph_memory=""
 glyph_geoip=""
+glyph_geoip_tor=""
 glyph_temp=""
 glyph_time=""
+#
+# Position of widgets
+widpos_time="\
+    1"
+widpos_kblayout="\
+    2"
+widpos_audio="\
+    3"
+widpos_geoip="\
+    4"
+widpos_cpu="\
+    5"
+widpos_mem="\
+    6"
+#
+##############################################################################
+# End of Configuration
+##############################################################################
 
+# Main function
+main() {
+    if [[ $1 = -h ]] ||
+       [[ $1 = --help ]]; then
+       echo "statusbar script for suckless's dwm"
+       exit 0
+    fi
+    # Refresh the statusbar every 2 seconds
+    while true ; do
+        refresh_bar
+        sleep "$interval" &
+        wait
+    done
+}
 
+#############
+# FUNCTIONS #
+#############
 
+######
 # Construct the statusbar
-refresh_widgets_set1() { \
+refresh_widgets_set1() {
 
-    INDEX=1
     # Time and date widget
-    WIDGET[$INDEX]=$(widget_time)
+    WIDGET[$widpos_time]=$(widget_time)
 
     # Volume widget
     refresh_widgets_set2
 
-    INDEX=4
     # GeoIP widget
-    WIDGET[$INDEX]=$(widget_geoip)
+    WIDGET[$widpos_geoip]=$(widget_geoip)
 
-    INDEX=5
+    # CPU temp widget
+    WIDGET[$widpos_cpu]=$(widget_cpu)
+
     # Memory usage widget
-    WIDGET[$INDEX]=$(widget_mem)
+    WIDGET[$widpos_mem]=$(widget_mem)
 }
 
 # Construct the statusbar while updating only some of the widgets
-refresh_widgets_set2() { \
+refresh_widgets_set2() {
 
-    INDEX=2
     # Keyboard layout widget
-    WIDGET[$INDEX]=$(widget_kb_layout)
+    WIDGET[$widpos_kblayout]=$(widget_kb_layout)
 
-    INDEX=3
     # Audio widget
-    WIDGET[$INDEX]=$(widget_audio)
+    WIDGET[$widpos_audio]=$(widget_audio)
+
+    # Geoip widget
+    WIDGET[$widpos_geoip]="$geoip_last_output"
 }
+######
 
 
 
-
+######
 # Widget that shows time and date.
-widget_time() { \
+widget_time() {
 
     echo "$(date -Im | \
         awk -v glyph="$glyph_time" 'BEGIN{FS=OFS="+"} \
         {gsub(/T/, " x ", $1); print glyph " " $1}')"
 }
 
-
 # Widget that shows the current keyboard layout.
-widget_kb_layout() { \
+widget_kb_layout() {
 
     echo "$glyph_keyboard"; echo "$(xkblayout-state print " %s")"; echo
 }
 
-
 # Widget that shows some audio related stuff.
-widget_audio() { \
+widget_audio() {
 
     # Check if audio is playing through headphones or speakers
     currentsink=$(vol-getcurrentsinkname)
-    if [ "$currentsink" = "analog-stereo" ]
+    if [[ $currentsink = analog-stereo ]]
     then
         sinkicon="$glyph_headphone"
     else
@@ -87,25 +132,22 @@ widget_audio() { \
     echo "${sinkicon} "; echo "$(vol-getcurrentvolumeandmute)"
 }
 
-
 # Widget that shows memory usage.
-widget_mem() { \
+widget_mem() {
 
     echo "$(free -h | \
         awk -v glyph="$glyph_memory" '/^Mem:/ {print glyph " " $3}')"
 }
 
-
 # Widget that shows CPU temp.
-widget_cpu() { \
-
-    echo "$(sensors | \
+widget_cpu() {
+    local cpu="$(sensors | \
         awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')"
+    echo "${cpu::-4}°C"
 }
 
-
 # Widget that shows your location based on your public ip.
-widget_geoip() { \
+widget_geoip() {
 
     local ip_direct="$(\
         curl -s --retry 1 ifconfig.me || echo "")"
@@ -126,8 +168,12 @@ widget_geoip() { \
                 /^GeoIP/ {gsub(/Iran/, "ir", $2);\
                 print glyph tolower($2) " - "}')"
 
+        [[ ! -z $glyph_geoip_tor ]] &&\
+            glyph_geoip_tor="${glyph_geoip_tor} "
+
         geoip_tor="$(echo "$geoip_tor" | \
             awk \
+                -v glyph="$glyph_geoip_tor"\
                 'BEGIN { FS=OFS=", " }\
                 /^GeoIP/ {print glyph tolower($2)}')"
 
@@ -138,13 +184,15 @@ widget_geoip() { \
     fi
 
 }
+######
 
 
 
 
+######
 # Now for the dirty background detail:
 # Stick all the widgets together into a line
-build_bar() { \
+build_bar() {
     local widget_count="${#WIDGET[@]}"
     statusbar=$(for ((i = "$widget_count"; i > 0; i--))
     do
@@ -154,7 +202,7 @@ build_bar() { \
 }
 
 # Write the bar to dwm via xsetroot
-write_bar() { \
+write_bar() {
     # Remove the first six characters of statusbar (leftover of the delimiter)
     statusbar="${bar_prefix}${statusbar:6}${enddelimiter}"
     xsetroot -name "$(echo -e "$statusbar" | tr -d '\n')" &
@@ -162,25 +210,24 @@ write_bar() { \
 }
 
 # Refresh and write the constructed statusbar
-refresh_bar() { \
+refresh_bar() {
     refresh_widgets_set1
     build_bar
     write_bar
+    # Save geoip widget's output to use it in refresh_widgets_set2
+    geoip_last_output="${WIDGET[$widpos_geoip]}"
 }
 
 # Refresh and write the constructed statusbar (but only refresh set2)
-refresh_bar_sigtrap() { \
+refresh_bar_sigtrap() {
     refresh_widgets_set2
     build_bar
     write_bar
 }
+######
 
 # Trap for updating the statusbar at will
 trap 'refresh_bar_sigtrap' SIGTRAP
 
-# Refresh the statusbar every 2 seconds
-while true ; do
-    refresh_bar
-    sleep "$interval" &
-    wait
-done
+# Run the main function
+main "$@"; exit

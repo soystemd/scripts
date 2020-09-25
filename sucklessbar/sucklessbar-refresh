@@ -5,7 +5,6 @@
 # upon receiving this signal.
 
 bar_refresh() {
-#   pkill -SIGTRAP sucklessbar > /dev/null 2>&1
     killall -s SIGTRAP sucklessbar > /dev/null 2>&1
 }
 
@@ -18,8 +17,12 @@ case "$1" in
             sleep "$interval"
         done &
         ;;
-    -h)
+    -h | --help)
         echo -e "usage:\e
+        refresh the bar once:
+            sucklessbar-refresh
+
+        refresh the bar a number of times at fixed intervals:
             sucklessbar-refresh [-r] <number of refreshes> <interval>"
         ;;
     *)

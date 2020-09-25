@@ -1,0 +1,12 @@
+#!/bin/sh
+# Restart the tor service
+user="koonix"
+sv restart tor
+sudo -u "$user" sucklessbar-refresh -r 5 1 &
+sudo -u "$user" logger -t tor-reset "tor restarted" &
+( tail -n 0 -F "/var/log/everything.log" & ) |
+    grep -q "Bootstrapped 100"
+sudo -u "$user" notify-send "Tor Restarted Successfully"
+killall tor-reset
+killall tor-reset-backend
+exit 0
