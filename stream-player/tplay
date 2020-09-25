@@ -1,0 +1,4 @@
+#!/bin/sh
+tor-reset
+sleep 4
+play "$@"

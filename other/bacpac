@@ -1,0 +1,19 @@
+#!/bin/sh
+user="koonix"
+path="/home/${user}/.config/bacpac"
+file_offirepo="${path}/official-repo.list"
+file_aur="${path}/aur.list"
+file_all="${path}/all.list"
+
+rm -f "$file_offirepo" "$file_aur" "$file_all"
+
+/usr/bin/pacman -Qqne \
+    > "$file_offirepo"
+
+/usr/bin/pacman -Qqme \
+    > "$file_aur"
+
+/usr/bin/pacman -Qq   \
+    > "$file_all"
+
+chown -R koonix:wheel "$path"/*

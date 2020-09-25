@@ -73,14 +73,14 @@ play_stream_in() {
 stream_fore() {
     youtube-dl -v -4 --proxy 127.0.0.1:8123 \
         --cookies "${HOME}/.local/share/ytdl-cookies/youtube.cookie"\
-        -o - "$1" | mpv -v -
+        -f 95 -o - "$1" | mpv -v -
 }
 
 # Play the given stream url and fork all the stuff to background
 stream_back() {
     2>/dev/null youtube-dl -q -4 --proxy 127.0.0.1:8123 \
         --cookies "${HOME}/.local/share/ytdl-cookies/youtube.cookie"\
-        -o - "$1" | mpv --quiet --no-term-osd-bar - >/dev/null 2>&1 &
+        -f 95 -o - "$1" | mpv --quiet --no-term-osd-bar - >/dev/null 2>&1 &
 #    mpv --quiet --no-taskbar-progress \
 #        --ytdl-raw-options-append=proxy=127.0.0.1:8123 "$1" |\
 #        xargs -0 notify-send "  Stream Player Error"
