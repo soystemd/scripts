@@ -1,15 +1,17 @@
 #!/bin/sh
 
 # Config
-break_interval="26"
+break_interval="20"
 
 main() {
+    write_to_file
 while true; do
     sleep 5
     if [ "$(xprintidle)" -le "60000" ]; then
         run_every_5_sec
     else
         minutes_till_next_break=$(( break_interval / 2 ))
+        write_to_file
     fi
 done
 }
@@ -32,11 +34,21 @@ run_every_5_sec() {
 
 run_every_min() {
     minutes_till_next_break=$(( minutes_till_next_break - 1 ))
+    write_to_file
     if [ "$minutes_till_next_break" -le "0" ]; then
         minutes_till_next_break="$break_interval"
-        koonix-lock
+        koonix-lock-triple
     fi
 
 }
+
+write_to_file() {
+    echo "$minutes_till_next_break" > "/tmp/eagle-${USER}"
+}
+
+remove_file() {
+    rm -f "/tmp/eagle-${USER}"
+}
+trap remove_file 15
 
 main; exit

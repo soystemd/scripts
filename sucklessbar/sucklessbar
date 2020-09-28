@@ -26,22 +26,25 @@ glyph_speaker=""
 glyph_memory=""
 glyph_geoip=""
 glyph_geoip_tor=""
+glyph_break=""
 glyph_temp=""
 glyph_time=""
 #
 # Position of widgets
 widpos_timedate="\
     1"
-widpos_kblayout="\
+widpos_break="\
     2"
-widpos_audio="\
+widpos_kblayout="\
     3"
-widpos_geoip="\
+widpos_audio="\
     4"
-widpos_cpu="\
+widpos_geoip="\
     5"
-widpos_mem="\
+widpos_cpu="\
     6"
+widpos_mem="\
+    7"
 #
 ##############################################################################
 # End of Configuration
@@ -70,33 +73,30 @@ main() {
 # Construct the statusbar
 refresh_widgets_all() {
 
-    # Time and date widget
-    WIDGET[$widpos_timedate]=$(widget_timedate)
+    # All the widgets
+    refresh_widgets_set1
 
     # Volume and keyboard-layout widgets
     refresh_widgets_set2
 
     # Geoip widget
     refresh_widgets_set3
-
-    # CPU temp widget
-    WIDGET[$widpos_cpu]=$(widget_cpu)
-
-    # Memory usage widget
-    WIDGET[$widpos_mem]=$(widget_mem)
 }
 
 # Construct the statusbar while updating only some of the widgets
 refresh_widgets_set1() {
 
     # Time and date widget
-    WIDGET[$widpos_time]=$(widget_time)
+    WIDGET[$widpos_timedate]=$(widget_timedate)
 
     # CPU temp widget
     WIDGET[$widpos_cpu]=$(widget_cpu)
 
     # Memory usage widget
     WIDGET[$widpos_mem]=$(widget_mem)
+
+    # Time left till next eagle break
+    WIDGET[$widpos_break]=$(widget_break)
 }
 
 # Construct the statusbar while updating only some of the widgets
@@ -113,7 +113,7 @@ refresh_widgets_set2() {
 refresh_widgets_set3() {
 
     # Geoip widget
-    WIDGET[$widpos_geoip]="$(widget_geoip)"
+    WIDGET[$widpos_geoip]=$(widget_geoip)
 }
 ######
 
@@ -160,6 +160,11 @@ widget_cpu() {
     local cpu="$(sensors | \
         awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')"
     echo "${cpu::-4}°C"
+}
+
+widget_break() {
+    local time_left_till_nextbreak=$(cat /tmp/eagle-${USER})
+    echo "$glyph_break $time_left_till_nextbreak"
 }
 
 # Widget that shows your location based on your public ip.
