@@ -1,2 +1,3 @@
 #!/bin/sh
+sudo -A killall tor-reset-backend
 sudo -A tor-reset-backend

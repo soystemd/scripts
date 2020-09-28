@@ -7,7 +7,7 @@ zsh_config_dir="${HOME}/.config/zsh"
 [ "$SHELL" = "/usr/bin/zsh" ] || (echo "error: your shell is not zsh"; exit 1)
 
 # Help message
-help="Check out the 'zshrice' script to understand what's going on."
+help="Check out the 'zsh-config' script to understand what's going on."
 
 # Parse given arguments
 case "$1" in

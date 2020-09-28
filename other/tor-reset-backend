@@ -3,7 +3,7 @@
 user="koonix"
 sudo -u "$user" notify-send "Restarting Tor..."
 sv restart tor
-sudo -u "$user" sucklessbar-refresh -r 5 1 &
+sudo -u "$user" sucklessbar-refresh -rg 5 2
 sudo -u "$user" logger -t tor-reset "tor restarted" &
 ( tail -n 0 -F "/var/log/everything.log" & ) |
     grep -q "Bootstrapped 100"
