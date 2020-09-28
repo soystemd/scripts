@@ -1,7 +1,9 @@
 #!/bin/sh
 remaps
 sucklessbar-refresh
-slock;slock;slock
+slock-break
+slock-break
+slock-break
 sleep 1
 remaps
 sleep 2

@@ -1,31 +1,83 @@
 #!/bin/sh
+#
+#################
+# Configuration #
+#################
+#
+# Break interval in minutes.
+# zero means disabled.
+break_interval=20
+#
+# If came back from idle, change the next time to break to
+# this value in minutes.
+# zero means the same as break interval.
+next_break_after_idle=15
+#
+# Lock the session if idle for this many minutes.
+# zero means disabled.
+session_locking=3
+#
+# How long in seconds should the mouse and keyboard idle
+# to consider the system idling.
+idle_threshold=90
 
-# Config
-break_interval="20"
+#############
+# Functions #
+#############
 
 main() {
-    write_to_file
+init
+write_to_file
 while true; do
     sleep 5
-    if [ "$(xprintidle)" -le "60000" ]; then
-        run_every_5_sec
+
+    [ "$1" = "-v" ] && echo "
+    --------------------------
+
+    session_locking_converted=
+    $session_locking_converted
+
+    idle=
+    $idle
+
+    idle_time=
+    $idle_time
+
+    xprintidle=
+    $(xprintidle)
+
+    idle_threshold_msec=
+    $idle_threshold_msec
+    "
+    if [ "$(xprintidle)" -le "$idle_threshold_msec" ]; then
+
+        idle=false
+        idle_time=0
+        [ "$break_interval" -gt "0" ] && run_every_5_sec
+
     else
-        minutes_till_next_break=$(( break_interval / 2 ))
-        write_to_file
+
+        minutes_till_next_break=$next_break_after_idle
+        [ "$next_break_after_idle" -le "0" ] &&\
+            minutes_till_next_break=$break_interval
+
+        if [ "$idle" = "false" ]; then write_to_file; idle=true; fi
+
+        [ "$session_locking" -gt "0" ] && idle_time=$(( idle_time + 1 ))
+
+        if [ "$idle_time" -ge "$session_locking_converted" ]; then
+            koonix-lock
+            [ "$1" = "-v" ] && echo "    Locked"
+            idle_time=0
+        fi
     fi
 done
 }
 
-# Init
-minutes_till_next_break="$break_interval"
-five_secs_intervals_till_next_min="12"
-
-take_a_break() {
-    display-off &
-}
 
 run_every_5_sec() {
-    five_secs_intervals_till_next_min=$(( five_secs_intervals_till_next_min - 1 ))
+    five_secs_intervals_till_next_min=$((\
+        five_secs_intervals_till_next_min - 1 ))
     if [ "$five_secs_intervals_till_next_min" -le "0" ]; then
         five_secs_intervals_till_next_min="12"
         run_every_min
@@ -37,18 +89,28 @@ run_every_min() {
     write_to_file
     if [ "$minutes_till_next_break" -le "0" ]; then
         minutes_till_next_break="$break_interval"
-        koonix-lock-triple
+        koonix-lock-break
+        write_to_file
     fi
 
 }
+
 
 write_to_file() {
     echo "$minutes_till_next_break" > "/tmp/eagle-${USER}"
 }
 
-remove_file() {
-    rm -f "/tmp/eagle-${USER}"
+# Init
+init() {
+    idle_threshold_msec=$(( idle_threshold * 1000))
+    session_locking_converted=$((\
+        (session_locking * 60 - idle_threshold) / 5  ))
+    minutes_till_next_break=$break_interval
+    five_secs_intervals_till_next_min=12
+    idle_time=0
+    idle=false
 }
-trap remove_file 15
 
-main; exit
+main "$@"
+remove_file
+exit
