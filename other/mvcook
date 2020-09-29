@@ -1,0 +1,19 @@
+#!/bin/sh
+
+src="/mnt/drives/d/downloads/artix/firefox/cookies.txt"
+
+[ ! -r "$source" ] &&\
+    src="/mnt/drives/d/downloads/artix/firefox/cookie/cookies.txt"
+
+[ ! -r "$source" ] &&\
+    echo "cookie file not found" && exit 1
+
+dest="${HOME}/.local/share/ytdl-cookies/youtube.cookie"
+
+mv -fv "$source" "$dest" ||\
+    { echo "mv error"; exit 1 }
+
+chmod -v a-x "$dest" ||\
+    { echo "chmod error"; exit 1 }
+
+exit 0
