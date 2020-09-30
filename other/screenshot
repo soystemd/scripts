@@ -7,10 +7,11 @@ delay="sleep $1"
 [ -z "$1" ] && delay="sleep 0.2"
 #
 case "$(printf "a selected area\\ncurrent window\\nfull screen\\na selected area (copy)\\ncurrent window (copy)\\nfull screen (copy)" | dmenu -l 6 -p "Screenshot which area?")" in
-	"a selected area") ${delay} && maim -u -s pic-selected-"$(date '+%y%m%d-%H%M-%S').png" ;;
-	"current window") ${delay} && maim -u -i "$(xdotool getactivewindow)" pic-window-"$(date '+%y%m%d-%H%M-%S').png" ;;
-	"full screen") ${delay} && maim -u pic-full-"$(date '+%y%m%d-%H%M-%S').png" ;;
+	"a selected area") ${delay} && maim -u -s sc-sel_"$(clock -f).png" ;;
+	"current window") ${delay} && maim -u -i "$(xdotool getactivewindow)" sc-wndw_"$(clock -f).png" ;;
+	"full screen") ${delay} && maim -u sc-full_"$(clock -f).png" ;;
 	"a selected area (copy)") ${delay} && maim -u -s | xclip -selection clipboard -t image/png ;;
 	"current window (copy)") ${delaey} && maim -u -i "$(xdotool getactivewindow)" | xclip -selection clipboard -t image/png ;;
 	"full screen (copy)") ${delay} && maim -u | xclip -selection clipboard -t image/png ;;
 esac
+notify-send "screenshot saved"

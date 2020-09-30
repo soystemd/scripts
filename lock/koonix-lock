@@ -1,5 +1,7 @@
 #!/bin/sh
 remaps
+mpc pause
+mpv-pause-all
 sucklessbar-refresh
 slock
 sleep 1

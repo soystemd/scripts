@@ -1,0 +1,54 @@
+#!/bin/sh
+#sed ':a;N;$!ba;s/\\\n//g'
+
+alias_file='
+
+tui neomutt
+    email mail\
+    proton protonmail
+
+tui newsboat
+    feed news
+
+tui pacmixer
+    mixer pulse volume audio
+
+tui ncmpcpp
+    music mpd mpc
+
+gui claws-mail
+    gmail
+
+'
+
+[ -z "$1" ] && notify-send "give arg!" && exit 1
+
+ptrn="$1"
+
+alias_list=$(\
+    echo "$alias_file" |\
+    awk 'BEGIN{FS=OFS="#"}; {print $1}' | awk NF |\
+    sed ':a;N;$!ba;s/\\\n//g')
+
+alias_only=$(\
+    echo "$alias_list" |\
+    awk '$1!~/^tui|^gui/ && $0~/\<'"$ptrn"'/ {print $0}')
+
+line=$(\
+    echo "$alias_list" | grep -B 1 -C 0 -e "$alias_only" | tr -d '\n')
+
+run=$(echo "$line" | awk '{print $2}')
+class=$(echo "$line" | awk '{print $1}')
+
+echo "$class"
+echo "$run"
+
+[ -z "$run" ] && notify-send "bad arg!" && exit 1
+
+shift
+
+[ "$class" = "tui" ] &&\
+    setsid -f "$TERMINAL" -e "$run" "$@" &&\
+    exit 0
+
+setsid -f "$run" "$@"

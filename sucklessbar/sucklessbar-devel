@@ -42,8 +42,10 @@ widpos_audio="\
     4"
 widpos_geoip="\
     5"
-widpos_mem="\
+widpos_cpu="\
     6"
+widpos_mem="\
+    7"
 #
 ##############################################################################
 # End of Configuration
@@ -56,12 +58,27 @@ main() {
        echo "statusbar script for suckless's dwm"
        exit 0
     fi
+    run_cpu_load_monitor_in_background
     # Refresh the statusbar every 2 seconds
     while true ; do
         refresh_bar_all
         sleep "$interval" &
         wait
     done
+}
+
+run_cpu_load_monitor_in_background() {
+
+    sleep "$interval"
+
+    exec 3< <(\
+        while true; do
+            awk '{u=$2+$4; t=$2+$4+$5; if (NR==1){u1=u; t1=t;}\
+            else print ($2+$4-u1) * 100 / (t-t1); }'\
+            <(grep 'cpu ' /proc/stat) <(\
+            sleep "$interval";grep 'cpu ' /proc/stat) |\
+            awk 'BEGIN{FS=OFS="."} {print $1}'
+        done)
 }
 
 #############
@@ -87,6 +104,9 @@ refresh_widgets_set1() {
 
     # Time and date widget
     WIDGET[$widpos_timedate]=$(widget_timedate)
+
+    # CPU temp widget
+    WIDGET[$widpos_cpu]=$(widget_cpu)
 
     # Memory usage widget
     WIDGET[$widpos_mem]=$(widget_mem)
@@ -152,30 +172,16 @@ widget_audio() {
 # Widget that shows memory usage.
 widget_mem() {
 
-    load=$(top -bn1 | grep "Cpu(s)" | \
-           sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | \
-           awk '{print 100 - $1}'|\
-           awk 'BEGIN{FS="."}{print $1}')
-
-    verbal=$(case 1 in
-    $(($load>= 90 )))echo "fucked";;
-    $(($load>= 70 )))echo "high"   ;;
-    $(($load>= 50 )))echo "medium" ;;
-    $(($load>= 30 )))echo "low"    ;;
-                   *)echo "cool"   ;;
-    esac)
-
     echo "$(free -h | \
-        awk -v glyph="$glyph_memory"\
-        -v verb="$verbal"\
-        '/^Mem:/ {print glyph " " $3 " - " verb}')"
+        awk -v glyph="$glyph_memory" '/^Mem:/ {print glyph " " $3}')"
 }
 
 # Widget that shows CPU temp.
 widget_cpu() {
+    load=$(read <&3 line; echo $line)
     local cpu="$(sensors | \
         awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')"
-    echo "${cpu::-4}°C"
+    echo "${cpu::-4}°C ${load}"
 }
 
 widget_break() {
