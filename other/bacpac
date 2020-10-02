@@ -1,5 +1,6 @@
 #!/bin/sh
 user="koonix"
+group="wheel"
 path="/home/${user}/.config/bacpac"
 file_offirepo="${path}/official-repo.list"
 file_aur="${path}/aur.list"
@@ -16,4 +17,4 @@ rm -f "$file_offirepo" "$file_aur" "$file_all"
 /usr/bin/pacman -Qq   \
     > "$file_all"
 
-chown -R koonix:wheel "$path"/*
+chown -R ${user}:${group} "$path"/*

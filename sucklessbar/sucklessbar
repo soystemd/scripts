@@ -157,18 +157,19 @@ widget_mem() {
            awk '{print 100 - $1}'|\
            awk 'BEGIN{FS="."}{print $1}')
 
+# Show glyphs based on cpu load percentage
     verbal=$(case 1 in
-    $(($load>= 90 )))echo "fucked";;
-    $(($load>= 70 )))echo "high"   ;;
-    $(($load>= 50 )))echo "medium" ;;
-    $(($load>= 30 )))echo "low"    ;;
-                   *)echo "cool"   ;;
+    $(($load>= 90 )))echo "";;
+    $(($load>= 70 )))echo ""   ;;
+    $(($load>= 50 )))echo "" ;;
+    $(($load>= 30 )))echo ""    ;;
+                   *)echo ""   ;;
     esac)
 
     echo "$(free -h | \
         awk -v glyph="$glyph_memory"\
         -v verb="$verbal"\
-        '/^Mem:/ {print glyph " " $3 " - " verb}')"
+        '/^Mem:/ {print glyph" "$3" "verb}')"
 }
 
 # Widget that shows CPU temp.

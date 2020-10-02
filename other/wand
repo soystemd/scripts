@@ -1,0 +1,148 @@
+#!/bin/sh
+
+######## Config ########
+#
+alias_file="$HOME/.config/wand/hermione"
+#
+# minimal shell
+shell="/bin/sh"
+#
+# shell for running interactive (int) commands
+int_shell="$SHELL"
+int_shell_opts="-i -c"
+#
+# other programs
+terminal="$TERMINAL"
+editor="$EDITOR"
+#
+########################
+
+# Handle options
+case "$1" in
+    -e) $editor "$alias_file"; exit 0 ;;
+    -d) devel=true; shift ;;
+    -l) list_aliases_and_exit=true ;;
+    "") exit 0
+esac
+
+main() {
+case "$class" in
+
+# Terminal user interface programs
+    -tui)
+        setsid -f\
+            $shell -c "eval \"\
+            \
+            $terminal -e $run\
+            \
+            \""\
+            >/dev/null 2>&1
+        hook
+        ;;
+
+
+# Edit a file
+    -edit)
+        setsid -f\
+            $shell -c "eval \"\
+            \
+            $terminal -e $editor $run\
+            \
+            \""\
+            >/dev/null 2>&1
+        hook
+        ;;
+
+
+# Open terminal in that dir
+    -dir | -cd)
+        setsid -f\
+            $terminal -e $shell -c "\
+            \
+            cd "$run"; exec $int_shell"\
+            \
+            >/dev/null 2>&1
+        hook
+        ;;
+
+
+# Interactive commands
+    -cmd | -int)
+        setsid -f\
+            $shell -c "eval \"\
+            \
+            $terminal -e $int_shell $int_shell_opts '$run; exec $int_shell'\
+            \
+            \""\
+            >/dev/null 2>&1
+        hook
+        ;;
+
+# GUI Programs, Background scripts
+    -gui | -bkgnd)
+        setsid -f\
+            $shell -c "eval \"\
+            \
+            $run\
+            \
+            \""\
+            >/dev/null 2>&1
+        ;;
+
+# Foreground
+    -fgnd)
+        $shell -c "eval \"\
+            \
+            $run\
+            \
+            \""
+        ;;
+esac
+}
+
+hook() {
+    sleep 0.1
+    opaque -r "$terminal" >/dev/null 2>&1
+}
+
+##########################
+# Gory background detail #
+##########################
+
+alias_list=$(\
+    cat "$alias_file" |\
+    awk 'BEGIN{FS=OFS="#"}; {print $1}' | awk NF |\
+    sed ':a;N;$!ba;s/\\\n//g')
+
+if [ "$list_aliases_and_exit" = "true" ]; then
+    echo "$alias_list" |\
+    awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ {print $0}' |\
+    tr ' ' '\n' | awk NF
+    exit 0
+fi
+
+pattern="$1"
+matched_aliases=$(\
+    echo "$alias_list" |\
+    awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ &&\
+    $0~/\<'"$pattern"'/ {print $0;exit}')
+
+cmd=$(\
+    echo "$alias_list" | awk -v ptrn="$matched_aliases"\
+        '$0!~ptrn { line = $0 }\
+        $0~ptrn { print line }')
+
+class=$(echo "$cmd" | awk '{print $1}')
+run=$(echo "$cmd" | awk '{$1="";sub(/ /,"");print $0}')
+
+[ "$devel" = "true" ] &&
+printf "\n\talias list:\n\n${alias_list}\n\n\tmatched_aliases:\n\n\
+${matched_aliases}\n\n\tcmd:\n\n${cmd}\n\n\tclass:\n\n\
+${class}\n\n\trun:\n\n${run}\n\n" &&
+exit 0
+
+if [ -z "$run" ] || [ -z "$class" ]; then
+    notify-send "Wand" "No Match Found."; exit 1
+fi
+
+main; exit

@@ -15,7 +15,7 @@ next_break_after_idle=15
 #
 # Lock the session if idle for this many minutes.
 # zero means disabled.
-session_locking=3
+session_locking=10
 #
 # How long in seconds should the mouse and keyboard idle
 # to consider the system idling.
