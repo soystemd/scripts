@@ -18,14 +18,19 @@ editor="$EDITOR"
 ########################
 
 # Handle options
+opts(){
 case "$1" in
     -e) $editor "$alias_file"; exit 0 ;;
     -d) devel=true; shift ;;
     -l) list_aliases_and_exit=true ;;
-    "") exit 0
+    "") exit 0 ;;
 esac
+pattern="$1"
+}
 
 main() {
+checkfile; opts "$@"; gory
+
 case "$class" in
 
 # Terminal user interface programs
@@ -37,7 +42,7 @@ case "$class" in
             \
             \""\
             >/dev/null 2>&1
-        hook
+        term_transp
         ;;
 
 
@@ -50,7 +55,7 @@ case "$class" in
             \
             \""\
             >/dev/null 2>&1
-        hook
+        term_transp
         ;;
 
 
@@ -62,7 +67,7 @@ case "$class" in
             cd "$run"; exec $int_shell"\
             \
             >/dev/null 2>&1
-        hook
+        term_transp
         ;;
 
 
@@ -75,7 +80,7 @@ case "$class" in
             \
             \""\
             >/dev/null 2>&1
-        hook
+        term_transp
         ;;
 
 # GUI Programs, Background scripts
@@ -100,7 +105,8 @@ case "$class" in
 esac
 }
 
-hook() {
+# Reapply terminal transparency to new terminal windows
+term_transp() {
     sleep 0.1
     opaque -r "$terminal" >/dev/null 2>&1
 }
@@ -108,41 +114,56 @@ hook() {
 ##########################
 # Gory background detail #
 ##########################
-
+gory() {
+# Remove all comments and empty lines from the config file,
+# and handle backslash line breaks
 alias_list=$(\
     cat "$alias_file" |\
     awk 'BEGIN{FS=OFS="#"}; {print $1}' | awk NF |\
     sed ':a;N;$!ba;s/\\\n//g')
 
+# List all the aliases only, and exit right here, if -l option was passed
 if [ "$list_aliases_and_exit" = "true" ]; then
     echo "$alias_list" |\
-    awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ {print $0}' |\
-    tr ' ' '\n' | awk NF
+    awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ \
+        {print $0}' | tr ' ' '\n' | awk NF
     exit 0
 fi
 
-pattern="$1"
+# Find the first matching aliases line
 matched_aliases=$(\
     echo "$alias_list" |\
     awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ &&\
     $0~/\<'"$pattern"'/ {print $0;exit}')
 
+# Get the line above the matching aliases line (which contains the commands)
 cmd=$(\
     echo "$alias_list" | awk -v ptrn="$matched_aliases"\
         '$0!~ptrn { line = $0 }\
         $0~ptrn { print line }')
 
+# Seperate command's class from the command itself
 class=$(echo "$cmd" | awk '{print $1}')
 run=$(echo "$cmd" | awk '{$1="";sub(/ /,"");print $0}')
 
+# Output some debugging details and exit right here, if -d option was passed
 [ "$devel" = "true" ] &&
 printf "\n\talias list:\n\n${alias_list}\n\n\tmatched_aliases:\n\n\
 ${matched_aliases}\n\n\tcmd:\n\n${cmd}\n\n\tclass:\n\n\
 ${class}\n\n\trun:\n\n${run}\n\n" &&
 exit 0
 
+# Exit if class or run variable is empty
 if [ -z "$run" ] || [ -z "$class" ]; then
     notify-send "Wand" "No Match Found."; exit 1
 fi
+}
 
-main; exit
+# Check if config file exists and is readable
+checkfile() {
+[ ! -r "$alias_file" ] &&\
+    echo "error: $alias_file not found" && exit 1
+}
+
+# Run everything
+main "$@"; exit
