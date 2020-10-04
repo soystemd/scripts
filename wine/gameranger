@@ -1,0 +1,5 @@
+#!/bin/sh
+WINEARCH="win32"
+WINEPREFIX="/mnt/drives/tux/wine/gameranger"
+exe="${WINEPREFIX}/drive_c/Program Files/"
+setsid -f wine "$exe" > /dev/null 2>&1

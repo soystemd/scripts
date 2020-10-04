@@ -7,6 +7,7 @@
 
 # Location of link to wallpaper link.
 BG_LOCATION="${XDG_DATA_HOME:-$HOME/.local/share/}/bg"
+[ ! -e "$BG_LOCATION" ] && BG_LOCATION="${XDG_DATA_HOME:-$HOME/.local/share/}/artix.png"
 
 [ -f "$1" ] && ln -sf "$(readlink -f "$1")" "$BG_LOCATION" && notify-send -i "$BG_LOCATION" "Changing wallpaper..."
 
@@ -14,6 +15,3 @@ BG_LOCATION="${XDG_DATA_HOME:-$HOME/.local/share/}/bg"
 
 # Set backgound using feh.
 feh --no-fehbg --bg-fill "$(readlink -f "$BG_LOCATION")"
-
-#pidof dwm >/dev/null && xdotool key super+F12
-#xwallpaper --zoom "$BG_LOCATION"

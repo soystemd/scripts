@@ -16,12 +16,20 @@ case "$1" in
         $EDITOR "${zsh_config_dir}/.zshrc"
         ;;
 
-    alias | al | aliases)
+    alias | al | a | aliases)
         $EDITOR "${zsh_config_dir}/alias.zsh"
         ;;
 
-    function | func | fn | functions)
+    update | up | u)
+        $EDITOR "${zsh_config_dir}/update.zsh"
+        ;;
+
+    function | func | fn | f | functions)
         $EDITOR "${zsh_config_dir}/function.zsh"
+        ;;
+
+    binding | bind | bn | b)
+        $EDITOR "${zsh_config_dir}/binding.zsh"
         ;;
 
     bookmark | bm | bookmarks)

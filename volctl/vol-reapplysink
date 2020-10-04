@@ -16,20 +16,19 @@ currentsink=$(cat "$currentsinkfile")
 if [ "${currentsink}" = "analog-stereo" ]
 then
 # Get the index of sink device
-    speakers="$(pactl list short sinks | awk '/hdmi-stereo/ {print $1}')"
-    newsinkdevice="$speakers"
-    echo "hdmi-stereo" > "$currentsinkfile"
-else
-# Get the index of sink device
     headphones="$(pactl list short sinks | awk '/analog-stereo/ {print $1}')"
     newsinkdevice="$headphones"
-    echo "analog-stereo" > "$currentsinkfile"
+else
+# Get the index of sink device
+    speakers="$(pactl list short sinks | awk '/hdmi-stereo/ {print $1}')"
+    newsinkdevice="$speakers"
 fi
 
 # Select the new device as default
 pactl set-default-sink "$newsinkdevice"
 
 # Change default device of all running audio streams
+sleep 0.2
 pactl list short sink-inputs | while read -r stream; do
     streamid=$(echo "$stream" | awk '{print $1}')
     pactl move-sink-input "$streamid" "$newsinkdevice"
