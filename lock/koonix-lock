@@ -3,7 +3,7 @@ remaps
 mpc pause
 mpv-pause-all
 sucklessbar-refresh
-slock
+if [ "$1" = "-b" ]; then slock-alt; else slock; fi
 sleep 1
 remaps
 sleep 2

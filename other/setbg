@@ -7,11 +7,25 @@
 
 # Location of link to wallpaper link.
 BG_LOCATION="${XDG_DATA_HOME:-$HOME/.local/share/}/bg"
-[ ! -e "$BG_LOCATION" ] && BG_LOCATION="${XDG_DATA_HOME:-$HOME/.local/share/}/artix.png"
-
-[ -f "$1" ] && ln -sf "$(readlink -f "$1")" "$BG_LOCATION" && notify-send -i "$BG_LOCATION" "Changing wallpaper..."
-
-[ -d "$1" ] && ln -sf "$(find "$(readlink -f "$1")" -iregex '.*.\(jpg\|jpeg\|png\|gif\)' -type f | shuf -n 1)" "$BG_LOCATION" && notify-send -i "$BG_LOCATION" "Random Wallpaper chosen."
 
 # Set backgound using feh.
-feh --no-fehbg --bg-fill "$(readlink -f "$BG_LOCATION")"
+bgset() {
+    feh --no-fehbg --bg-fill "$(readlink -f "$BG_LOCATION")"
+}
+
+if [ ! -e "$BG_LOCATION" ] || [ "$1" = "night" ]; then
+    BG_LOCATION="${XDG_DATA_HOME:-$HOME/.local/share/}/artix.png"
+    [ "$1" = "night" ] && bgset && exit
+fi
+
+[ -f "$1" ] &&
+    ln -sf "$(readlink -f "$1")" "$BG_LOCATION" &&
+    notify-send -i "$BG_LOCATION" "Changing wallpaper..."
+
+[ -d "$1" ] &&
+    ln -sf "$(find "$(readlink -f "$1")" -iregex '.*.\(jpg\|jpeg\|png\|gif\)'\
+        -type f | shuf -n 1)" "$BG_LOCATION" &&
+    notify-send -i "$BG_LOCATION" "Random Wallpaper chosen."
+
+bgset
+exit

@@ -25,13 +25,24 @@ idle_threshold=90
 # Functions #
 #############
 
+# tmpfile path
+tmpfile="/tmp/eagle-${USER}"
+
 main() {
-init
-write_to_file
+
+case "$1" in
+    -t) toggle_pause; exit ;;
+    -h | --help) print_help; exit ;;
+    -v | --verbose | -d | --debug) debug=true ;;
+esac
+
+init; write_to_file
+
 while true; do
+
     sleep 5
 
-    [ "$1" = "-v" ] && echo "
+    [ "$debug" = "true" ] && echo "
     --------------------------
 
     session_locking_converted=
@@ -48,26 +59,38 @@ while true; do
 
     idle_threshold_msec=
     $idle_threshold_msec
+
+    is_paused=
+    $(is_paused)
     "
+
+    # if pc is not idle:
     if [ "$(xprintidle)" -le "$idle_threshold_msec" ]; then
 
         idle=false
         idle_time=0
-        [ "$break_interval" -gt "0" ] && run_every_5_sec
+        # if breaking isn't disabled, run the 5-sec timekeeper function
+        [ "$break_interval" -gt "0" ] && [ "$(is_paused)" = "false" ] &&\
+            run_every_5_sec
 
+    # if pc is idling:
     else
 
+        # reset all the variables and shit like that
         minutes_till_next_break=$next_break_after_idle
         [ "$next_break_after_idle" -le "0" ] &&\
             minutes_till_next_break=$break_interval
 
+        # update the file only once after going idle
         if [ "$idle" = "false" ]; then write_to_file; idle=true; fi
 
+        # if session locking is enabled, increment idle timer timer
         [ "$session_locking" -gt "0" ] && idle_time=$(( idle_time + 1 ))
 
+        # if we've reached the session locking time threshold, lock the session.
         if [ "$idle_time" -ge "$session_locking_converted" ]; then
             koonix-lock
-            [ "$1" = "-v" ] && echo "    Locked"
+            [ "$debug" = "true" ] && echo "    Locked"
             idle_time=0
         fi
     fi
@@ -89,7 +112,7 @@ run_every_min() {
     write_to_file
     if [ "$minutes_till_next_break" -le "0" ]; then
         minutes_till_next_break="$break_interval"
-        koonix-lock-break
+        koonix-lock -b
         write_to_file
     fi
 
@@ -97,7 +120,18 @@ run_every_min() {
 
 
 write_to_file() {
-    echo "$minutes_till_next_break" > "/tmp/eagle-${USER}"
+    [ "$1" = pause ] && echo "$1" > "$tmpfile" && return
+    echo "$minutes_till_next_break" > "$tmpfile"
+}
+
+toggle_pause() {
+    [ "$(is_paused)" = "true" ] && init && write_to_file && return
+    write_to_file pause
+}
+
+is_paused() {
+    [ "$(cat "$tmpfile")" = "pause" ] && echo true && return
+    echo false
 }
 
 # Init
@@ -111,6 +145,17 @@ init() {
     idle=false
 }
 
+print_help() {
+echo '
+eagle handles locking the pc if idle and making you take periodic breaks.
+
+options:
+    -t              toggle pause/restart the break timer
+    --help, -h      print help and exit
+    --verbose, --debug,
+    -v, -d          run eagle and print debugging info every five seconds
+'
+}
+
 main "$@"
-remove_file
 exit

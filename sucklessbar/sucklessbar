@@ -90,9 +90,6 @@ refresh_widgets_set1() {
 
     # Memory usage widget
     WIDGET[$widpos_mem]=$(widget_mem)
-
-    # Time left till next eagle break
-    WIDGET[$widpos_break]=$(widget_break)
 }
 
 # Construct the statusbar while updating only some of the widgets
@@ -103,6 +100,9 @@ refresh_widgets_set2() {
 
     # Audio widget
     WIDGET[$widpos_audio]=$(widget_audio)
+
+    # Time left till next eagle break
+    WIDGET[$widpos_break]=$(widget_break)
 }
 
 # Construct the statusbar while updating only some of the widgets
@@ -181,6 +181,8 @@ widget_cpu() {
 
 widget_break() {
     local time_left_till_nextbreak=$(cat /tmp/eagle-${USER})
+    [ "$time_left_till_nextbreak" = "pause" ] &&\
+        time_left_till_nextbreak=""
     echo "$glyph_break $time_left_till_nextbreak"
 }
 
