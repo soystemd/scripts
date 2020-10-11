@@ -29,6 +29,7 @@ case "$1" in
 
         bak=true
         wall_link="$wall_bak"
+        wall_main="$wall_bak"
         bak_word="Backup "
         shift
         ;;
