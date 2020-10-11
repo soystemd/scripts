@@ -112,7 +112,7 @@ run_every_min() {
     write_to_file
     if [ "$minutes_till_next_break" -le "0" ]; then
         minutes_till_next_break="$break_interval"
-        koonix-lock -b
+        sh -c "koonix-lock -b"
         write_to_file
     fi
 

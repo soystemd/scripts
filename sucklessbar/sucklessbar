@@ -7,7 +7,7 @@
 ##############################################################################
 #
 # Bar update interval
-interval=6
+interval=5
 #
 # The delimiter character(s) between widgets
 # The escape sequences \x01 through \x06 represent colors
@@ -51,12 +51,10 @@ widpos_mem="\
 
 # Main function
 main() {
-    if [[ $1 = -h ]] ||
-       [[ $1 = --help ]]; then
-       echo "statusbar script for suckless's dwm"
-       exit 0
-    fi
-    # Refresh the statusbar every 2 seconds
+    case "$1" in
+        -h | --help) echo "statusbar script for suckless's dwm"; exit 0 ;;
+    esac
+    # Refresh the statusbar
     while true ; do
         refresh_bar_all
         sleep "$interval" &
@@ -189,26 +187,26 @@ widget_break() {
 # Widget that shows your location based on your public ip.
 widget_geoip() {
 
-    local ip_direct="$(\
-        curl -s --retry 1 ifconfig.me || echo "")"
+    local ip_direct=$(\
+        curl -s --retry 1 ifconfig.me || echo "")
 
-    local ip_tor="$(\
-        curl -x socks5://127.0.0.1:9050 -s --retry 1 ifconfig.me || echo "")"
+    local ip_tor=$(\
+        curl -x socks5://127.0.0.1:9050 -s --retry 1 ifconfig.me || echo "")
 
     if [ "$ip_direct" = "" ] && [ "$ip_tor" = "" ]; then
         echo "$ip_direct"
     else
-        geoip_direct="$(geoiplookup "$ip_direct")"
-        geoip_tor="$(geoiplookup "$ip_tor")"
+        geoip_direct=$(geoiplookup "$ip_direct")
+        geoip_tor=$(geoiplookup "$ip_tor")
 
         geoip_direct="$(echo "$geoip_direct" | \
             awk \
                 -v glyph="$glyph_geoip"\
                 'BEGIN { FS=OFS="," }\
                 /^GeoIP/ {gsub(/Iran/, "ir", $2);\
-                print glyph tolower($2) " - "}')"
+                print glyph tolower($2) " "}')"
 
-        [[ ! -z $glyph_geoip_tor ]] &&\
+        [ -n "$glyph_geoip_tor" ] &&\
             glyph_geoip_tor="${glyph_geoip_tor} "
 
         geoip_tor="$(echo "$geoip_tor" | \
@@ -217,11 +215,15 @@ widget_geoip() {
                 'BEGIN { FS=OFS=", " }\
                 /^GeoIP/ {print glyph tolower($2)}' |\
                 tr -d 'eioa')"
+# 
+        netspeed=$(netspeed --compact enp3s0)
+        [ -n "$netspeed" ] && netspeed=" $netspeed"
 
         [ "$ip_direct" = "" ] && geoip_direct="$ip_direct"
         [ "$ip_tor" = "" ] && geoip_tor="$ip_tor"
         echo "$geoip_direct"
         echo "$geoip_tor"
+        echo "$netspeed"
     fi
 
 }
@@ -237,20 +239,24 @@ refresh_bar_all() {
     refresh_widgets_all
     build_bar
     write_bar
-    # Save geoip widget's output to use it in refresh_widgets_set2
+    # Save these widget's output to use them in refresh_widgets_set2
     geoip_last_output="${WIDGET[$widpos_geoip]}"
+    mem_last_output="${WIDGET[$widpos_mem]}"
 }
 
 refresh_bar_set1() {
     refresh_widgets_set1
     build_bar
     write_bar
+    # Save these widget's output to use them in refresh_widgets_set2
+    mem_last_output="${WIDGET[$widpos_mem]}"
 }
 
 # Refresh and write the constructed statusbar (but only refresh set2)
 refresh_bar_set2() {
     refresh_widgets_set2
     WIDGET[$widpos_geoip]="$geoip_last_output"
+    WIDGET[$widpos_mem]="$mem_last_output"
     build_bar
     write_bar
 }
@@ -260,7 +266,7 @@ refresh_bar_set3() {
     refresh_widgets_set3
     build_bar
     write_bar
-    # Save geoip widget's output to use it in refresh_widgets_set2
+    # Save these widget's output to use them in refresh_widgets_set2
     geoip_last_output="${WIDGET[$widpos_geoip]}"
 }
 
@@ -272,12 +278,12 @@ build_bar() {
         echo "$delimiter"
         echo "${WIDGET[$i]}"
     done)
+# Remove the first six characters of statusbar (leftover of the delimiter)
+    statusbar="${bar_prefix}${statusbar:6}${enddelimiter}"
 }
 
 # Write the bar to dwm via xsetroot
 write_bar() {
-    # Remove the first six characters of statusbar (leftover of the delimiter)
-    statusbar="${bar_prefix}${statusbar:6}${enddelimiter}"
     xsetroot -name "$(echo -e "$statusbar" | tr -d '\n')" &
     wait
 }

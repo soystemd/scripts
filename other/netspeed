@@ -1,8 +1,32 @@
 #!/bin/sh
-# Prints current bandwidth usage.
+#
+# config
+# display / sleep interval
+sample_duration="0.5"
 
-# Check net interface
-SLP=1 # display / sleep interval
+###############################
+# opts
+case "$1" in
+    -c | --compact) compact=true; shift ;;
+esac
+###############################
+# print everything  
+main() {
+    if [ "$compact" ]; then
+        u=u
+        d=d
+        [ "$dlraw" -gt 5 ] && dl="$dlraw${d}"
+        [ "$ulraw" -gt 5 ] && ul="$ulraw${u}"
+        [ -n "$dl" ] && [ -n "$ul" ] && seperator=" " && delete="${u}${d}"
+        echo "${dl}${seperator}${ul}" | tr -d "$delete"
+        exit 0
+
+    else
+        printf "In: %2i KB | Out: %2i KB\n" $dlraw $ulraw;
+    fi
+}
+###############################
+# check net interface
 DEVICE=$1
 IS_GOOD=0
 for GOOD_DEVICE in `grep \: /proc/net/dev | awk -F: '{print $1}'`; do
@@ -16,19 +40,22 @@ if [ $IS_GOOD -eq 0 ]; then
   grep ":" /proc/net/dev | awk -F: '{print $1}' | sed s@\ @@g
   exit 1
 fi
+###############################
+# set variables
 
-# Set variables
 LINE=`grep $1 /proc/net/dev | sed s/.*://`;
 RECEIVED1=`echo $LINE | awk '{print $1}'`
 TRANSMITTED1=`echo $LINE | awk '{print $9}'`
 TOTAL=$(($RECEIVED1+$TRANSMITTED1))
-sleep $SLP
+sleep "$sample_duration"
 LINE=`grep $1 /proc/net/dev | sed s/.*://`;
 RECEIVED2=`echo $LINE | awk '{print $1}'`
 TRANSMITTED2=`echo $LINE | awk '{print $9}'`
-#SPEED=$(($RECEIVED2+$TRANSMITTED2-$TOTAL)/$SLP)
-INSPEED="$((($RECEIVED2-$RECEIVED1)/$SLP))"
-OUTSPEED="$((($TRANSMITTED2-$TRANSMITTED1)/$SLP))"
 
-# Print everything
-printf "In: %2i KB | Out: %2i KB\n" $(($INSPEED/1024)) $(($OUTSPEED/1024));
+#SPEED=$(echo "( $RECEIVED2 + $TRANSMITTED2 - $TOTAL ) / $sample_duration " | bc)
+INSPEED=$(echo "( $RECEIVED2 - $RECEIVED1 ) / $sample_duration " | bc)
+OUTSPEED=$(echo "( $TRANSMITTED2 - $TRANSMITTED1 ) / $sample_duration " | bc)
+dlraw=$(( INSPEED / 1024 ))
+ulraw=$(( OUTSPEED / 1024 ))
+###############################
+main

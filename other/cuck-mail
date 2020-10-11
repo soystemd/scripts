@@ -1,2 +1,15 @@
 #!/bin/sh
+
+case "$1" in
+    -ns) no_server=true; shift ;;
+esac
+
+if [ "$no_server" = "true" ]; then
+    hydroxide serve &
+fi
+
+[ -n "$1" ] && git checkout "$1"
+
 claws-mail --alternate-config-dir "${XDG_DATA_HOME}/claws-mail"
+
+[ "$no_server" = "true" ] && killall hydroxide && echo hydroxide killed
