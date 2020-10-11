@@ -7,7 +7,8 @@ sample_duration="0.5"
 ###############################
 # opts
 case "$1" in
-    -c | --compact) compact=true; shift ;;
+    -c | --compact) compact=true; shift  ;;
+    -h | --help) echo "netspeed"; exit 0 ;;
 esac
 ###############################
 # print everything  
