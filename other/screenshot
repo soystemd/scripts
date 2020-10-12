@@ -4,15 +4,16 @@
 # highlighting an area to copy. scrotcucks on suicidewatch right now.
 #
 delay="sleep $1"
+dir="/mnt/drives/d/downloads/artix/screenshot"
 [ -z "$1" ] && delay="sleep 0.2"
 #
 case "$(printf "a selected area\\ncurrent window\\nfull screen\\na selected area (copy)\\ncurrent window (copy)\\nfull screen (copy)" | dmenu -p "Screenshot which area?")" in
-	"a selected area") ${delay} && maim -u -s sc-sel_"$(clock -f).png" ;;
-	"current window") ${delay} && maim -u -i "$(xdotool getactivewindow)" sc-wndw_"$(clock -f).png" ;;
-	"full screen") ${delay} && maim -u sc-full_"$(clock -f).png" ;;
-	"a selected area (copy)") ${delay} && maim -u -s | xclip -selection clipboard -t image/png ;;
-	"current window (copy)") ${delaey} && maim -u -i "$(xdotool getactivewindow)" | xclip -selection clipboard -t image/png ;;
-	"full screen (copy)") ${delay} && maim -u | xclip -selection clipboard -t image/png ;;
+	"a selected area")        ${delay} && maim -u -s                              $dir/sc-sele_"$(clock -f).png" ;;
+	"full screen")            ${delay} && maim -u                                 $dir/sc-full_"$(clock -f).png" ;;
+	"current window")         ${delay} && maim -u -i "$(xdotool getactivewindow)" $dir/sc-wndw_"$(clock -f).png" ;;
+	"a selected area (copy)") ${delay} && maim -u -s                              | xclip -selection clipboard -t image/png ;;
+	"full screen (copy)")     ${delay} && maim -u                                 | xclip -selection clipboard -t image/png ;;
+	"current window (copy)")  ${delay} && maim -u -i "$(xdotool getactivewindow)" | xclip -selection clipboard -t image/png ;;
     *) exit;;
 esac
 notify-send "screenshot saved"

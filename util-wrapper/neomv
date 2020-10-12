@@ -1,0 +1,6 @@
+#!/bin/sh
+mv -- "$@"
+#rsync -a --remove-source-files --info=progress2 "$@"
+#stat -c "%d" /path
+#for dest; do true; done
+#find "$dest" -type d -empty -delete

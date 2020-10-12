@@ -155,11 +155,11 @@ widget_mem() {
            awk '{print 100 - $1}'|\
            awk 'BEGIN{FS="."}{print $1}')
 
-# Show glyphs based on cpu load percentage
+# Show glyphs based on cpu load percentage  
     verbal=$(case 1 in
-    $(($load>= 90 )))echo "";;
-    $(($load>= 70 )))echo ""   ;;
-    $(($load>= 50 )))echo "" ;;
+    $(($load>= 90 )))echo "";;
+    $(($load>= 70 )))echo ""   ;;
+    $(($load>= 50 )))echo "" ;;
     $(($load>= 30 )))echo ""    ;;
                    *)echo ""   ;;
     esac)
