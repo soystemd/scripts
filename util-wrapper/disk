@@ -3,7 +3,8 @@
 # This script shows all mounted disks and their free/used disk space in GB.
 
 # Print the header
-echo -e "\nDisk                           Used                Free        Total\n"
+echo -e "\
+\nDisk                           Used                Free        Total\n"
 
 # Some intense awking to format the output of 'df' command
 df -T | awk '/^\/dev\/sd/ \

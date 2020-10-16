@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# You might notice all mpv commands are aliased to have this input-ipc-server
+# thing. That's just for this particular command, which allows us to pause
+# every single one of them with one command!
+#
+main () {
+    case "$1" in
+        p | pause ) pause  ;;
+        r | resume) resume ;;
+        t | toggle) toggle ;;
+        *) echo "mpv controller script"; exit ;;
+    esac
+}
+
+pause () {
+    for socket in /tmp/mpvSockets/*; do
+        echo '{ "command": ["set_property", "pause", true] }' |
+        socat - "$socket";
+    done
+}
+
+resume () {
+    for socket in /tmp/mpvSockets/*; do
+        echo '{ "command": ["set_property", "pause", false] }' |
+        socat - "$socket";
+    done
+
+}
+
+toggle  () {
+    file=/tmp/mpv-control
+    [ ! -r "$file" ] && echo 1 > $file
+    [ "$(cat $file)" = "1" ] && pause && echo 0 > $file && exit
+    resume && echo 1 > $file
+}
+
+main "$@"
+exit

@@ -6,11 +6,11 @@ top_level_mount_dir="${HOME}/Mount/MTP"
 
 # Functions
 # Delete temp files
-cleanup() { \
+cleanup() {
     find -P /tmp -maxdepth 1 -name automtpmount\* -delete > /dev/null 2>&1
 }
 # Cleanup and exit
-cleanup_and_exit() { \
+cleanup_and_exit() {
     cleanup
     echo; echo "Exiting..."
     exit 0
@@ -47,7 +47,7 @@ devices_name_list=$(mktemp /tmp/automtpmount.XXXXXXXX)
 
 # Build some lists of available/detected devices
 echo "Building list of devices..."
-jmtpfs -l | awk 'f;/Available/ {f=1}' |\
+jmtpfs -l | awk 'f;/Available/ {f=1}' |
     awk '!seen[$0]++'                          > "$devices_info_list"
 
 awk -F ", " '{print $6}'\

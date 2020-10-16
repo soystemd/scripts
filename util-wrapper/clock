@@ -5,15 +5,15 @@
 # -c stands for condensed
 # -f stands for filename
 
-[ "$1" = "-c" ] &&\
-    date -Is | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, "xx", $1); print $1}' &&\
+[ "$1" = "-c" ] &&
+    date -Is | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, "xx", $1); print $1}' &&
     exit 0
 
-[ "$1" = "-f" ] &&\
-    date -Is | awk -v random="$(shuf -i 100-999 -n 1)"\
+[ "$1" = "-f" ] &&
+    date -Is | awk -v random="$(shuf -i 100-999 -n 1)" \
     'BEGIN{FS=OFS="+"}\
-    {gsub(/T/, "_", $1); gsub(/:/, "-", $1); print $1 "_" random}' |\
-    tr -d '-' &&\
+    {gsub(/T/, "_", $1); gsub(/:/, "-", $1); print $1 "_" random}' |
+    tr -d '-' &&
     exit 0
 
     exit 0

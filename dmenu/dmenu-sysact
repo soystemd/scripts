@@ -1,0 +1,142 @@
+#!/bin/sh
+
+##########
+# Config #
+##########
+
+delimiter="->"
+
+actions="
+ Lock-> lock
+鈴 Suspend-> sus
+⏻ Poweroff-> off
+ Reboot-> res
+ Kill Xorg-> xorg
+"
+
+reboot_choices="
+ Artix-> reboot=artix
+ Windows-> reboot=windows
+ Devuan-> reboot=devuan
+"
+
+prompt="Select Action:"
+prompt_off="Really Poweroff?"
+prompt_reboot_to="Reboot To:"
+prompt_res="Really Reboot?"
+prompt_xorg="Really Kill Xorg?"
+
+lock_cmd=slock
+lock_cmd_alt=slock-alt
+
+###############################
+########## Functions ##########
+###############################
+
+# Handle options and stuff
+main()
+{
+if   [ "$1" = lock ] && [ "$2" = --break ]; then lock $lock_cmd_alt
+elif [ "$2" = lock ] && [ "$1" = --break ]; then lock $lock_cmd_alt
+else
+    case "$1" in
+        reboot | reset | restart) res ;;
+        poweroff | shutdown) off ;;
+        suspend | sleep) sus ;;
+        lock) lock ;;
+        xorg) xorg ;;
+        *) ask ;;
+    esac
+fi
+}
+
+
+ask()
+{
+    # Selec an action via dmenu
+    selected_action="$(
+        echo "$actions" | awk NF |
+            awk -F "$delimiter" '{print $1}' | dmenu -p "$prompt"
+    )"
+
+    # Exit if nothing selected in dmenu
+    [ -z "$selected_action" ] && exit 1
+
+
+    # Extract the command of that action
+    action_cmd="$(
+        echo "$actions" | awk NF |
+            awk -F "$delimiter" -v ptrn="$selected_action" '
+            $1~ptrn {for (i=2; i<=NF; i++) print $i}'
+    )"
+
+    eval "$action_cmd"
+}
+
+
+lock()
+{
+    remaps
+    mpc pause
+    mpv-control pause
+    sucklessbar-refresh
+    [ -n "$1" ] && eval "$1" || $lock_cmd
+    sleep 1
+    remaps
+    sleep 2
+    remaps
+}
+
+
+sus()
+{
+    sudo -A zzz -z
+}
+
+
+off()
+{
+    dmenu-prompt "$prompt_off" sudo -A poweroff
+}
+
+
+res()
+{
+    dos=false
+
+    local choice="$(
+        echo "$reboot_choices" | awk NF |
+            awk -F "$delimiter" '{print $1}' | dmenu -p "$prompt_reboot_to"
+    )"
+
+    # Exit if nothing selected in dmenu
+    [ -z "$choice" ] && exit 1
+
+
+    local choice_cmd="$(
+        echo "$reboot_choices" | awk NF |
+            awk -F "$delimiter" -v ptrn="$choice" '
+            $1~ptrn {for (i=2; i<=NF; i++) print $i}'
+    )"
+
+    eval "$choice_cmd"
+
+    dmenu-prompt "$prompt_res" \
+        "
+            case $reboot in
+                arch) ;;
+                windows) sudo -A grub-reboot Windows ;;
+                devuan) sudo -A grub-reboot Devuan ;;
+            esac
+            sudo -A reboot
+        "
+}
+
+
+xorg()
+{
+    dmenu-prompt "$prompt_xorg" killall Xorg
+}
+
+main "$@"
+exit

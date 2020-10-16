@@ -7,4 +7,4 @@
 [ "$(printf "No\\nYes" |
     dmenu -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ] || exit 0
 shift
-"$@"
+sh -c " eval \"$@\" "

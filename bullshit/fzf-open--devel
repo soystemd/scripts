@@ -1,0 +1,13 @@
+#!/bin/sh
+find -L . -mindepth 1 -maxdepth 6 -type f \
+    \
+    \
+    -not -path "*/\.git/*"\
+    -not -name ".git"\
+    -not -path "*/\.surf/*"\
+    -not -name ".surf"\
+    \
+    \
+    2>/dev/null |
+    awk 'BEGIN {FS=OFS=""} {$1=$2=""; print $0}' |
+    fzf --prompt="Choose File:"

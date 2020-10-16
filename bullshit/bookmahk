@@ -1,0 +1,5 @@
+#!/bin/sh
+bmfile="$XDG_CONFIG_HOME/zshmarks/bookmarks"
+bm=$(awk -F "|" '{print $2}' "$bmfile" | fzf --prompt="Go To:")
+[ -z "$bm" ] && exit 1
+eval cd "$(awk -F "|" -v bm="$bm" '$2~bm {print $1}' "$bmfile")"

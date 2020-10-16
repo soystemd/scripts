@@ -1,15 +1,62 @@
 #!/bin/sh
-# Koonix 2020-08-19
-
-# A dmenu wrapper script for system functions.
 
 # Config
-prompt_text="Mount What?"
+delimiter="->"
 
-cmds="\
- USB		mount-usb
- MTP	mount-mtp
-ﴓ FTP	mount-ftp"
+prompt="Mount What?"
 
-choice="$(echo "$cmds" | cut -d'	' -f 1 | dmenu -p "$prompt_text")" || exit 1
-`echo "$cmds" | grep "^$choice	" | cut -d '	' -f2-`
+actions="
+ USB-> mount_usb
+ MTP-> mount_mtp
+ﴓ FTP-> mount_ftp
+"
+
+main()
+{
+case "$1" in
+    usb) mount_usb ;;
+    mtp) mount_mtp ;;
+    ftp) mount_ftp ;;
+    *) ask ;;
+esac
+}
+
+ask()
+{
+    # Selec an action via dmenu
+    selected_action="$(
+        echo "$actions" | awk NF |
+            awk -F "$delimiter" '{print $1}' | dmenu -p "$prompt"
+    )"
+
+    # Exit if nothing selected in dmenu
+    [ -z "$selected_action" ] && exit 1
+
+    # Extract the command of that action
+    action_cmd="$(
+        echo "$actions" | awk NF |
+            awk -F "$delimiter" -v ptrn="$selected_action" '
+            $1~ptrn {for (i=2; i<=NF; i++) print $i}'
+    )"
+
+    eval "$action_cmd"
+}
+
+
+mount_usb()
+{
+    $TERMINAL -e bashmount
+}
+
+mount_mtp()
+{
+    $TERMINAL -e bashmtp
+}
+
+mount_ftp()
+{
+    $TERMINAL -e bashftp
+}
+
+main "$@"
+exit

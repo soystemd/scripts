@@ -7,7 +7,7 @@
 ##############################################################################
 #
 # Bar update interval
-interval=5
+interval=8
 #
 # The delimiter character(s) between widgets
 # The escape sequences \x01 through \x06 represent colors
@@ -34,16 +34,16 @@ glyph_play=""
 # Position of widgets
 widpos_timedate="\
     1"
-widpos_break="\
-    2"
+#widpos_break="\
+#    2"
 widpos_kblayout="\
-    3"
+    2"
 widpos_audio="\
-    4"
+    3"
 widpos_geoip="\
-    5"
+    4"
 widpos_mem="\
-    6"
+    5"
 #
 ##############################################################################
 # End of Configuration
@@ -100,7 +100,7 @@ refresh_widgets_set2() {
     WIDGET[$widpos_audio]=$(widget_audio)
 
     # Time left till next eagle break
-    WIDGET[$widpos_break]=$(widget_break)
+#    WIDGET[$widpos_break]=$(widget_break)
 }
 
 # Construct the statusbar while updating only some of the widgets

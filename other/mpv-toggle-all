@@ -1,5 +1,0 @@
-#!/bin/sh
-file=/tmp/mpv-toggle-all
-[ ! -r "$file" ] && echo 1 > $file
-[ "$(cat $file)" = "1" ] && mpv-pause-all && echo 0 > $file && exit
-mpv-resume-all && echo 1 > $file

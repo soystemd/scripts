@@ -1,2 +1,9 @@
 #!/bin/sh
+case "$1" in
+    -c | --classic)
+        shift
+        cp -ri -- "$@"
+        exit
+        ;;
+esac
 rsync -a --info=progress2 -- "$@"

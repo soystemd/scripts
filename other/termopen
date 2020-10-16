@@ -1,5 +1,4 @@
 #!/bin/sh
-# Koonix 2020-08-19
 
 # Open a terminal in the path [which is given as an argument]
 cd "$1"
