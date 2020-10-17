@@ -1,4 +1,7 @@
 #!/bin/zsh
+# Open and edit different zsh related files.
+# I aliased zsh-config to zconf.
+# so to edit my aliases, the command would be 'zconf al'.
 
 # Config
 zsh_config_dir="${HOME}/.config/zsh"
@@ -9,35 +12,18 @@ zsh_config_dir="${HOME}/.config/zsh"
 # Help message
 help="Check out the 'zsh-config' script to understand what's going on."
 
+# Open given zsh file in editor
+edit(){$EDITOR "${zsh_config_dir}/${1}"}
+
 # Parse given arguments
 case "$1" in
 
-    zsh | z | zshrc | .zshrc | rc | rice)
-        $EDITOR "${zsh_config_dir}/.zshrc"
-        ;;
-
-    alias | al | a | aliases)
-        $EDITOR "${zsh_config_dir}/alias.zsh"
-        ;;
-
-    update | up | u)
-        $EDITOR "${zsh_config_dir}/update.zsh"
-        ;;
-
-    function | func | fn | f | functions)
-        $EDITOR "${zsh_config_dir}/function.zsh"
-        ;;
-
-    binding | bind | bn | b)
-        $EDITOR "${zsh_config_dir}/binding.zsh"
-        ;;
-
-    bookmark | bm | bookmarks)
-        $EDITOR "$BOOKMARKS_FILE"
-        ;;
-
-    *)
-        echo "$help"
-        ;;
+               bookmark | bm | bookmarks) $EDITOR "$BOOKMARKS_FILE" ;;
+    zsh | z | zshrc | .zshrc | rc | rice) edit ".zshrc"       ;;
+                alias | al | a | aliases) edit "alias.zsh"    ;;
+                         update | up | u) edit "update.zsh"   ;;
+    function | func | fn | f | functions) edit "function.zsh" ;;
+                 binding | bind | bn | b) edit "binding.zsh"  ;;
+                                       *) echo "$help" ;;
 esac
 exit 0

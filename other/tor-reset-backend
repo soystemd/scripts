@@ -1,13 +1,23 @@
 #!/bin/sh
-# Restart the tor service
+# Restart the tor service, and notify when it reconnects successfully.
+
+# Config
 user="koonix"
+
+# Restart the service
 sudo -u "$user" notify-send "Restarting Tor..."
 sv restart tor
+
+# Refresh my bar
 sudo -u "$user" sucklessbar-refresh -rg 5 2
+
+# Log a message that tor was restarted.
 sudo -u "$user" logger -t tor-reset "tor restarted" &
+
+# Wait for it to connect to tor network, and notify when it does.
 ( tail -n 0 -F "/var/log/everything.log" & ) |
     grep -q "Bootstrapped 100"
 sudo -u "$user" notify-send "Tor Restarted Successfully"
+
 killall tor-reset
 killall tor-reset-backend
-exit 0

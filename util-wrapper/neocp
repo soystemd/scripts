@@ -1,4 +1,5 @@
 #!/bin/sh
+# A replacement for cp with progressbar.
 case "$1" in
     -c | --classic)
         shift

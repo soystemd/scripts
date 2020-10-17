@@ -1,4 +1,9 @@
 #!/bin/sh
+# Build some lists of my installed packages and put them somewhere.
+#
+# This script is run as root from a pacman hook, so at the end I have to
+# chown the generated lists to myself.
+
 user="koonix"
 group="wheel"
 path="/home/${user}/.config/bacpac"

@@ -1,6 +1,4 @@
 #!/bin/sh
-# Koonix 2020-08-19
-
 # Get the name of the current audio output device
 
 CURRENTSINKFILE="$(find -P /tmp -maxdepth 1 -name volctl\*)"

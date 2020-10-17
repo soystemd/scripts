@@ -1,4 +1,5 @@
 #!/bin/sh
+# Launch gameranger via wine.
 WINEARCH="win32"
 WINEPREFIX="/mnt/drives/tux/wine/gameranger"
 exe="${WINEPREFIX}/drive_c/Program Files/"

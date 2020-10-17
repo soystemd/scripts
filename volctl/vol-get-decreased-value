@@ -1,6 +1,4 @@
 #!/bin/sh
-# Koonix 2020-08-19
-
 # Takes the current volume as an argument and rounds it down to the
 # nearest multiple of $ROUND_TO. Also considers $MINVOL and $MAXVOL
 # while doing so.

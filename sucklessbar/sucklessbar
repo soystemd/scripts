@@ -1,6 +1,5 @@
 #!/bin/bash
-# Koonix 2020-08-23
-# This script be responsible for me statusbar.
+# This script be responsible for my statusbar.
 
 ##############################################################################
 # Configuration

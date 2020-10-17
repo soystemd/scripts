@@ -1,6 +1,4 @@
 #!/bin/sh
-# Koonix 2020-08-19
-
 # Same as vol-getcurrentvolume, but puts $MUTE_INDICATOR next to the volume
 # percentage, if the current audio output device is muted.
 

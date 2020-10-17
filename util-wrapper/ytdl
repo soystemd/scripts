@@ -1,5 +1,0 @@
-#!/bin/sh
-[ -z "$*" ] && exit
-youtube-dl -4 --proxy 127.0.0.1:8123 \
---cookies "${HOME}/.local/share/ytdl-cookies/youtube.cookie" \
-"$@"

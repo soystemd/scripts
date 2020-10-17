@@ -1,24 +1,29 @@
 #!/bin/sh
+#
+# This script launches whatever you want with whatever alias you like.
+#
+# It can launch background/gui programs, tui programs, open directories,
+# run interactive terminal commands, open text files in your editor, and more.
+#
+# Look at the aliases file to know more: ~/.config/wand/hermione
 
-######## Config ########
-#
-alias_file="$HOME/.config/wand/hermione"
-#
-# minimal shell
+
+
+# Config
+alias_file="$XDG_CONFIG_HOME/wand/hermione"
+# your minimal shell
 shell="/bin/sh"
-#
 # shell for running interactive (int) commands
 int_shell="$SHELL"
 int_shell_opts="-i -c"
-#
-# other programs
+# set the programs
 terminal="$TERMINAL"
 editor="$EDITOR"
 #
-########################
 
 # Handle options
-opts(){
+opts()
+{
 case "$1" in
     -e) $editor "$alias_file"; exit 0 ;;
     -d) devel=true; shift ;;
@@ -28,12 +33,15 @@ esac
 pattern="$1"
 }
 
-main() {
-checkfile; opts "$@"; gory
+main()
+{
+checkfile
+opts "$@"
+gory
 
 case "$class" in
 
-# Terminal user interface programs
+# TUI (Terminal user interface) program
     -tui)
         setsid -f\
             $shell -c "eval \"\
@@ -106,7 +114,8 @@ esac
 }
 
 # Reapply terminal transparency to new terminal windows
-term_transp() {
+term_transp()
+{
     sleep 0.1
     opaque -r "$terminal" >/dev/null 2>&1
 }
@@ -114,7 +123,9 @@ term_transp() {
 ##########################
 # Gory background detail #
 ##########################
-gory() {
+
+gory()
+{
 # Remove all comments and empty lines from the config file,
 # and handle backslash line breaks
 alias_list=$(\
@@ -160,7 +171,8 @@ fi
 }
 
 # Check if config file exists and is readable
-checkfile() {
+checkfile()
+{
 [ ! -r "$alias_file" ] &&\
     echo "error: $alias_file not found" && exit 1
 }

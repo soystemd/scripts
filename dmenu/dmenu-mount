@@ -1,10 +1,9 @@
 #!/bin/sh
+# Show some options to launch some mounting scripts with dmenu.
 
 # Config
-delimiter="->"
-
 prompt="Mount What?"
-
+delimiter="->"
 actions="
  USB-> mount_usb
  MTP-> mount_mtp

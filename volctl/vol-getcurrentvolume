@@ -1,6 +1,4 @@
 #!/bin/sh
-# Koonix 2020-08-19
-
 # Get the volume percentage of the currently active audio output device.
 
 CURRENTSINK=$(vol-getcurrentsinkname)

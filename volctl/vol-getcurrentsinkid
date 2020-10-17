@@ -1,6 +1,4 @@
 #!/bin/sh
-# Koonix 2020-08-19
-
 # Get the numeral ID (Specified by PulseAudio) of the current audio output device
 
 CURRENTSINK=$(vol-getcurrentsinkname)

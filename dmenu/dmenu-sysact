@@ -96,7 +96,7 @@ sus()
 
 off()
 {
-    dmenu-prompt "$prompt_off" sudo -A poweroff
+    dmenu-prompt "$prompt_off" "sudo -A poweroff"
 }
 
 
@@ -135,7 +135,7 @@ res()
 
 xorg()
 {
-    dmenu-prompt "$prompt_xorg" killall Xorg
+    dmenu-prompt "$prompt_xorg" "killall Xorg"
 }
 
 main "$@"

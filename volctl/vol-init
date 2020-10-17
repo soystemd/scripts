@@ -1,8 +1,7 @@
 #!/bin/sh
-# Koonix 2020-08-19
+# Initialize the whole volume controlling stuff.
 
 sleep 2
-
 # Delete all temp files relted to this script
 find -P /tmp -maxdepth 1 -name volctl\* -delete
 

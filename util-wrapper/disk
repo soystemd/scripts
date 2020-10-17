@@ -1,5 +1,4 @@
 #!/bin/sh
-# Koonix 2020-09-01
 # This script shows all mounted disks and their free/used disk space in GB.
 
 # Print the header

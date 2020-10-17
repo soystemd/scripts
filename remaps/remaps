@@ -1,4 +1,5 @@
 #!/bin/sh
+# All my keyboard and mouse remapping and settings and stuff is done here.
 
 # Set keyboard layout and model
 setxkbmap -model pc105 -layout us,ir

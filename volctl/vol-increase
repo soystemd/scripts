@@ -1,6 +1,4 @@
 #!/bin/sh
-# Koonix 2020-08-19
-
 # Increases the volume of the currently active output audio device.
 
 minvol=0

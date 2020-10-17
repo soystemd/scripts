@@ -1,17 +1,20 @@
 #!/bin/sh
-#
-# config
-# display / sleep interval
+# Show current upload-download bandwidth usage.
+
+# duration of sampling and averaging of transferred packets
 sample_duration="0.5"
 
 ###############################
 # opts
+
 case "$1" in
-    -c | --compact) compact=true; shift  ;;
-    -h | --help) echo "netspeed"; exit 0 ;;
+    -c | --compact) compact=true; shift ;;
+    -h | --help) echo "Show current upload-download bandwidth usage."; exit ;;
 esac
+
 ###############################
 # print everything  
+
 main() {
     if [ "$compact" ]; then
         u=u
@@ -26,8 +29,10 @@ main() {
         printf "In: %2i KB | Out: %2i KB\n" $dlraw $ulraw;
     fi
 }
+
 ###############################
 # check net interface
+
 DEVICE=$1
 IS_GOOD=0
 for GOOD_DEVICE in `grep \: /proc/net/dev | awk -F: '{print $1}'`; do
@@ -41,6 +46,7 @@ if [ $IS_GOOD -eq 0 ]; then
   grep ":" /proc/net/dev | awk -F: '{print $1}' | sed s@\ @@g
   exit 1
 fi
+
 ###############################
 # set variables
 
@@ -53,10 +59,12 @@ LINE=`grep $1 /proc/net/dev | sed s/.*://`;
 RECEIVED2=`echo $LINE | awk '{print $1}'`
 TRANSMITTED2=`echo $LINE | awk '{print $9}'`
 
-#SPEED=$(echo "( $RECEIVED2 + $TRANSMITTED2 - $TOTAL ) / $sample_duration " | bc)
+#SPEED=$(\
+#echo "( $RECEIVED2 + $TRANSMITTED2 - $TOTAL ) / $sample_duration " | bc)
 INSPEED=$(echo "( $RECEIVED2 - $RECEIVED1 ) / $sample_duration " | bc)
 OUTSPEED=$(echo "( $TRANSMITTED2 - $TRANSMITTED1 ) / $sample_duration " | bc)
 dlraw=$(( INSPEED / 1024 ))
 ulraw=$(( OUTSPEED / 1024 ))
-###############################
-main
+
+main "$@"
+exit

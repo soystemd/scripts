@@ -1,4 +1,11 @@
 #!/bin/bash
+# Get class name of a program and make all it's instances
+# transparent, opaque or toggle it at will.
+#
+# This script handles my terminal,s transparency.
+# See, in some dwm layouts, windows fall on top of eachother, and having an
+# Always-Transparent terminal wouldn'd be nice then. so I have dwm to just
+# toggle it off in those layouts, and Toggle it back on in tiling layouts.
 
 # Config
 opacity_transparent="0xdfffffff"
@@ -183,7 +190,8 @@ Options:
             initialization is required for using the next two options
 
   -t    toggle transparency for all windows
-  -r    reapply transparency to all [new] windows
+  -r    reapply transparency to all windows
+            useful for applying transparency to newly opened windows of a program.
 
   -c    cleanup all the tempfiles;
             can be used without any other arguments

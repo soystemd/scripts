@@ -1,0 +1,6 @@
+#!/bin/sh
+# A Wrapper for youtube-dl that adds a proxy and some options to youtube-dl.
+
+[ -z "$*" ] && exit
+cookie="$XDG_DATA_HOME/ytdl-cookies/youtube.cuck"
+youtube-dl -4 --proxy 127.0.0.1:8123 --cookies "$cookie" "$@"

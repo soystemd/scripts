@@ -1,4 +1,5 @@
 #!/bin/sh
+# Launch ltspice via wine.
 WINEARCH="win32"
 WINEPREFIX="/mnt/drives/tux/wine/ltspice"
 exe="${WINEPREFIX}/drive_c/Program Files/LTC/LTspiceXVII/XVIIx86.exe"

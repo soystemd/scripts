@@ -1,6 +1,4 @@
 #!/bin/sh
-# Koonix 2020-08-19
-
 # This script toggles the default audio
 # sink AND the audio sink of active streams
 # between two (or more) sink devices.

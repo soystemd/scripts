@@ -1,4 +1,6 @@
 #!/bin/sh
+# Luke Smith's autistic script
+#
 # When I open an image from the file manager in sxiv (the image viewer), I want
 # to be able to press the next/previous keys to key through the rest of the
 # images in the same directory. This script "rotates" the content of a

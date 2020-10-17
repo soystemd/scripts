@@ -1,0 +1,34 @@
+#!/bin/bash
+# Get a video link and open it in mpv via youtube-dl.
+
+# Config
+cookie="$XDG_DATA_HOME/ytdl-cookies/youtube.cuck"
+
+# Kill playback
+stream_kill() {
+    killall -q youtube-dl
+    killall -q mpv
+}
+# Intercept SIGINT and SIGTERM
+trap stream_kill 2
+trap stream_kill 15
+
+# Launch the video in background
+stream_bg() {
+    notify-send "  It's coming..."
+    2>/dev/null youtube-dl -q -4 --proxy 127.0.0.1:8123 --cookies "$cookie" \
+        -o - "$1" | mpv --quiet --no-term-osd-bar \
+        --force-seekable=yes --keep-open=yes - >/dev/null 2>&1 &
+}
+
+# Launch the video in background
+stream_fg() {
+    youtube-dl -v -4 --proxy 127.0.0.1:8123 --cookies "$cookie" \
+        -o - "$1" | mpv -v --force-seekable=yes --keep-open=yes -
+}
+
+case "$1" in
+    "") exit ;;
+    -f) shift; stream_fg "$1" ;;
+    *) stream_bg "$1" ;;
+esac

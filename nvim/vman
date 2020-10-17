@@ -1,4 +1,5 @@
 #!/bin/sh
+#                 M A N - P A G E S    I N    V I M
 
 if [ "$#" -eq "0" ]; then
   echo "What manual do you want bruv?";

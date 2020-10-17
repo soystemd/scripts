@@ -1,6 +1,4 @@
 #!/bin/sh
-# Koonix 2020-08-26
-
 # Show date and time in a nice format
 # -c stands for condensed
 # -f stands for filename
