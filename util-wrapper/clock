@@ -1,11 +1,7 @@
 #!/bin/sh
 # Show date and time in a nice format
 # -c stands for condensed
-# -f stands for filename
-
-[ "$1" = "-c" ] &&
-    date -Is | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, "xx", $1); print $1}' &&
-    exit 0
+# -f stands for filename; formats date for use in a filename
 
 [ "$1" = "-f" ] &&
     date -Is | awk -v random="$(shuf -i 100-999 -n 1)" \
@@ -14,5 +10,7 @@
     tr -d '-' &&
     exit 0
 
-    exit 0
-date -Is | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, " xx ", $1); print $1}'
+delim=" xx "
+[ "$1" = "-c" ] && delim="xx"
+
+date -Is | awk 'BEGIN{FS=OFS="+"} {gsub(/T/, "'"$delim"'", $1); print $1}'

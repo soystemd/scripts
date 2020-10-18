@@ -1,0 +1,63 @@
+#!/bin/sh
+# Luke Smith's script
+#
+# This is bound to Shift+PrintScreen by default, requires maim. It lets you
+# choose the kind of screenshot to take, including copying the image or even
+# highlighting an area to copy. scrotcucks on suicidewatch right now.
+
+delay="sleep $1"
+dir="/mnt/drives/d/downloads/artix/screenshot"
+[ -z "$1" ] && delay="sleep 0.2"
+
+o1="Select Area"
+o2="Current Window"
+o3="FullScreen"
+o4="Select Area (Copy)"
+o5="Current Window (Copy)"
+o6="FullScreen (Copy)"
+options="$o1
+$o2
+$o3
+$o4
+$o5
+$o6"
+
+case "$( echo "$options" | dmenu -l 6 -p "Screenshot which area?")" in
+
+	"$o1")
+
+        ${delay} && maim -u -s ${dir}/sc-sele_"$(clock -f).png"
+        ;;
+
+	"$o2")
+
+        ${delay} && maim -u ${dir}/sc-full_"$(clock -f).png";
+        ;;
+
+	"$o3")
+
+        ${delay} && maim -u -i "$(xdotool getactivewindow)" \
+            ${dir}/sc-wndw_"$(clock -f).png"
+        ;;
+
+	"$o4")
+
+        ${delay} && maim -u -s |
+            xclip -selection clipboard -t image/png
+        ;;
+
+	"$o5")
+
+        ${delay} && maim -u |
+            xclip -selection clipboard -t image/png
+        ;;
+
+	"$o6")
+        ${delay} && maim -u -i "$(xdotool getactivewindow)" |
+            xclip -selection clipboard -t image/png
+        ;;
+
+    *) exit;;
+esac
+
+notify-send "screenshot saved"

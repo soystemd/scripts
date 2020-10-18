@@ -3,7 +3,11 @@
 
 # Config
 prompt="Mount What?"
+prefix="[ "
+suffix=" ]"
+
 delimiter="->"
+
 actions="
  USB-> mount_usb
  MTP-> mount_mtp
@@ -25,17 +29,22 @@ ask()
     # Selec an action via dmenu
     selected_action="$(
         echo "$actions" | awk NF |
-            awk -F "$delimiter" '{print $1}' | dmenu -p "$prompt"
+            awk -F "$delimiter" -v pf="$prefix" -v sf="$suffix" '
+            {print pf $1 sf}' | dmenu -p "$prompt"
     )"
 
     # Exit if nothing selected in dmenu
     [ -z "$selected_action" ] && exit 1
+    # remove prefix and suffix
+
+    selected_action=${selected_action#"$prefix"}
+    selected_action=${selected_action%"$suffix"}
 
     # Extract the command of that action
     action_cmd="$(
         echo "$actions" | awk NF |
             awk -F "$delimiter" -v ptrn="$selected_action" '
-            $1~ptrn {for (i=2; i<=NF; i++) print $i}'
+            $1==ptrn {for (i=2; i<=NF; i++) print $i; exit}'
     )"
 
     eval "$action_cmd"
