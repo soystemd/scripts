@@ -1,0 +1,7 @@
+#!/bin/sh
+file="/tmp/supercp-${USER}"
+[ -z "$*" ] && exit 1
+[ "$1" = "--add" ] && shift || rm -f "$file"
+for arg; do
+    echo "$arg" >> "$file"
+done

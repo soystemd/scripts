@@ -1,0 +1,32 @@
+#!/bin/sh
+# A replacement for cp with progressbar.
+
+# error file
+err="/tmp/supercp-error-${USER}"
+
+# opts
+fallback=false
+case "$1" in
+    --classic|--fallback) shift; fallback=true ;;
+esac
+
+# check the number of given args (should be 2 or more)
+if [ "$#" -lt 2 ]; then
+    echo "specify paths"
+    exit 1
+fi
+
+# use good ol' cp if --fallback flag is given
+if [ "$fallback" = "true" ]; then
+    echo "using cp..."
+    cp -ri -- "$@"
+    exit 0
+fi
+
+# use rsync, but don't display rsync's error message if it's exit code is 20
+exec 2>"$err"
+rsync -a --info=progress2 -- "$@"
+if [ $? -ne 20 ]; then
+    cat "$err"
+fi
+rm -f "$err"

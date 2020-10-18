@@ -1,0 +1,50 @@
+#!/bin/sh
+# test files and args
+file="/tmp/supercp-${USER}"
+last="/tmp/supercp-last-${USER}"
+[ ! -r "$file" ] && exit 1
+
+# opts
+fallback=false
+case "$1" in
+    --classic|--fallback) shift; fallback=true ;;
+esac
+
+# test destination
+[ ! -d "$1" ] && exit 1
+
+# print some info
+clear
+echo -e "    copying:\n"
+cat "$file"
+echo -e "\n    to:\n\n${1}\n"
+
+# prompt the user if the files were copied more than 2 minutes ago.
+if test "`find "$file" -mmin +2`"; then
+    read -p "proceed? [Y/n]" x
+    case "$x" in
+        y) ;;
+        Y) ;;
+        "") ;;
+        *) exit 1 ;;
+    esac
+fi
+
+# copy
+dest="$1"
+echo
+if [ "$fallback" = "true" ]; then
+    ( cat "$file"; echo "$dest" ) | xargs -d "\n" supercp --fallback
+else
+    ( cat "$file"; echo "$dest" ) | xargs -d "\n" supercp
+fi
+
+# done
+if [ "$?" -ne 0 ]; then
+    echo
+figlet "copy aborted."
+    read
+    exit 1
+fi
+figlet "copy finished."
+read

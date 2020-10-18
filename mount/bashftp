@@ -15,8 +15,10 @@
 
 # Config
 ftp_ip="192.168.1.15:9999"
+mnt_path="$HOME/Mount/FTP"
 
-main() {
+main()
+{
     # Big boy ethernal while loop
     while true; do
 
@@ -27,36 +29,54 @@ main() {
     case "$entered_command" in
         m) ftp_mount; continue ;;
         u) ftp_unmount; continue ;;
+        f) ftp_force_unmount; continue ;;
+        o) open; continue ;;
         q) exit 0 ;;
-        *) command_output="Command invalid" ;;
+        "") continue ;;
+        *) command_output="Invalid Command" ;;
     esac
     done
 }
 
-ftp_mount() {
+ftp_mount()
+{
     command_output="$(
-        2>&1 curlftpfs -o utf8 "ftp://${ftp_ip}" ~/Mount/FTP &&
-        echo "FTP Mounted")"
-}
-
-suprompt="
-UnMounting as user failed, trying as root now
-[sudo] password for %p: "
-
-ftp_unmount() {
-    command_output="$(
-        fusermount -u ~/Mount/FTP 2>&1 && echo "FTP UnMounted" ||
-        echo "UnMounting as user failed, trying as root now" &&
-        sudo -p "$suprompt" umount ~/Mount/MTP 2>&1 && echo "FTP UnMounted"
+        (grep -q "$ftp_ip" /etc/mtab && echo "Already Mounted") ||
+        (2>&1 curlftpfs -o utf8 "ftp://${ftp_ip}" "$mnt_path" &&
+        echo "FTP Mounted")
         )"
 }
 
-helper_text() {
+ftp_unmount()
+{
+    command_output="$(
+        fusermount -u "$mnt_path" 2>&1 && echo "FTP Unmounted"
+        )"
+}
+
+ftp_force_unmount()
+{
+    command_output="$(
+        2>&1 sudo umount "$mnt_path" && echo "FTP Unmounted"
+        )"
+}
+
+open()
+{
+    termopen "$mnt_path"
+}
+
+helper_text()
+{
 echo -e "${command_output}
 
-━━━━━━━━━━━━ Commands ━━━━━━━━━━━
+━━━━━━━━━━━ Commands ━━━━━━━━━━━━
 
-m: mount    u: unmount    q: quit
+  m: mount        o: open
+
+  u: unmount      f: force unmount
+
+  enter: redraw   q: quit
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "

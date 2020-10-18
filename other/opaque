@@ -27,31 +27,16 @@ main() {
             ;;
     esac
 
+# Handle Args
     case "$1" in
-        -0)
-            set_all_windows_transparent
-            ;;
-        -1)
-            set_all_windows_opaque
-            ;;
-        -t)
-            toggle_transparency_all_windows
-            ;;
-        -r)
-            reapply_transparency_all_windows
-            ;;
-        -i)
-            opaque_init
-            ;;
-        -c)
-            opaque_cleanup
-            ;;
-        -h | --help)
-            print_help_and_exit 0
-            ;;
-        *)
-            print_help_and_exit 0
-            ;;
+        -h | --help) print_help_and_exit 0 ;;
+        -0) set_all_windows_transparent ;;
+        -1) set_all_windows_opaque ;;
+        -t) toggle_transparency_all_windows ;;
+        -r) reapply_transparency_all_windows ;;
+        -i) opaque_init ;;
+        -c) opaque_cleanup ;;
+        *) print_help_and_exit 0 ;;
     esac
 }
 ######

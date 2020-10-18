@@ -1,0 +1,13 @@
+#!/bin/sh
+# Move the youtube cookie I extracted [ from firefox via an addon ] to it's
+# appropriate place, to be used by my youtube-dl scripts.
+
+dest="$XDG_DATA_HOME/ytdl-cookies/youtube.cuck"
+dl="/mnt/drives/d/downloads/artix/firefox"
+src="$dl/cookies.txt"
+
+[ ! -r "$src" ] && src="$dl/cookie/cookies.txt"
+[ ! -r "$src" ] && echo "cookie file not found" && exit 1
+
+mv -fv "$src" "$dest" || echo "mv error"
+chmod -v a-x "$dest" || echo "chmod error"

@@ -1,0 +1,56 @@
+#!/bin/sh
+# test files and args
+file="/tmp/supercp-${USER}"
+last="/tmp/supercp-last-${USER}"
+[ ! -r "$file" ] && exit 1
+
+# opts
+case "$1" in
+    --classic|--fallback) shift; fallback=true; ;;
+esac
+
+# test destination
+[ ! -d "$1" ] && exit 1
+
+mvf()
+{
+    mv -f "$file" "$last"
+}
+trap mvf 2 15
+
+# print some info
+clear
+echo -e "    moving:\n"
+cat "$file"
+echo -e "\n    to:\n\n${1}\n"
+
+# prompt the user if the files were copied more than 2 minutes ago.
+if test "`find "$file" -mmin +2`"; then
+    read -p "proceed? [Y/n]" x
+    case "$x" in
+        y) ;;
+        Y) ;;
+        "") ;;
+        *) exit 1 ;;
+    esac
+fi
+
+# move
+dest="$1"
+echo
+if [ "$fallback" = "true" ]; then
+    ( cat "$file"; echo "$dest" ) | xargs -d "\n" supermv --fallback
+else
+    ( cat "$file"; echo "$dest" ) | xargs -d "\n" supermv
+fi
+mvf
+
+# done
+if [ "$?" -ne 0 ]; then
+    echo
+figlet "move aborted."
+    read
+    exit 1
+fi
+figlet "move finished."
+read

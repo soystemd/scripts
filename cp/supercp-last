@@ -1,0 +1,3 @@
+#!/bin/sh
+file="/tmp/supercp-last-${USER}"
+cat "$file"
