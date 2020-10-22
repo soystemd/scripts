@@ -1,0 +1,29 @@
+#!/bin/sh
+# Launch photoshop and hide dwm bar when switched to photoshop's tag
+# (because of some graphical bugs).
+
+# Config
+photoshop_tag=$((1<<7)) # Tag 8
+
+# Listen to dwm tag change event, and hide the bar if switched to tag 8
+# Do all these in background
+dwm-msg --ignore-reply subscribe tag_change_event |
+  jq --unbuffered '.tag_change_event.new_state.selected' |
+  while IFS=$'\n' read -r tag; do
+      [ "$tag" = "$photoshop_tag" ] && dwmc togglebar && bar=false
+      [ "$tag" != "$photoshop_tag" ] && [ "$bar" = "false" ] &&
+          dwmc togglebar && bar=true
+  done &
+
+# Launch photoshop
+photoshop
+
+# Kill all background jobs at the end
+sleep 0.1
+kill $(jobs -p)
+
+# Notify the successfull exit
+sleep 0.1
+[ "$bar" = "false" ] && dwmc togglebar
+notify-send "Photoshop Closed."
+exit 0

@@ -84,9 +84,7 @@ ask()
 lock()
 {
     remaps
-    mpc pause
-    mpv-control pause
-    sucklessbar-refresh
+    pause-all
     [ -n "$1" ] && eval "$1" || $lock_cmd
     sleep 1
     remaps

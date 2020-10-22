@@ -1,0 +1,8 @@
+#!/bin/sh
+# Pause mpc music,
+# pause all mpv instances,
+# and pause firefox videos (like youtube) and stuff.
+mpc pause
+mpv-control pause
+playerctl -a pause
+sucklessbar-refresh

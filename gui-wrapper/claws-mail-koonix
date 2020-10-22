@@ -2,17 +2,21 @@
 # Launch hydroxide server for connecting to protonmail, then launch claws-mail.
 # And close the server after claws-mail is closed.
 
+# Handle args
 server=true
 case "$1" in
     -ns) server=false; shift ;;
 esac
 
-if [ "$server" = "true" ]; then
-    hydroxide serve &
-fi
+# Launch server in background
+if [ "$server" = "true" ]; then hydroxide serve &; fi
 
-[ -n "$1" ] && git checkout "$1"
+#[ -n "$1" ] && git checkout "$1"
 
+# Launch claws-mail
 claws-mail --alternate-config-dir "${XDG_DATA_HOME}/claws-mail"
 
+# Kill the server at the end
+sleep 0.1
+kill $(jobs -p)
 [ "$server" = "true" ] && killall hydroxide && echo hydroxide killed

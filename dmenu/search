@@ -1,0 +1,4 @@
+#!/bin/sh
+search_string="$(dmenu-ask "Search")"
+[ -z "$search_string" ] && exit 1
+firefox --search "$search_string"

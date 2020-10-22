@@ -1,0 +1,80 @@
+#!/bin/sh
+# You can control dwm with this script.
+
+# layouts:
+#
+# 1 -> grid
+# 2 -> dwindle
+# 3 -> deck
+# 4 -> centered-master
+# 5 -> monocle
+# 6 -> floating
+
+main()
+{
+case "$1" in
+
+    layout)
+
+        shift;
+        case "$1" in
+            grid)    set_layout 1 ;;
+            dwindle) set_layout 2 ;;
+            deck)    set_layout 3 ;;
+            cmaster) set_layout 4 ;;
+            monocle) set_layout 5 ;;
+            float)   set_layout 6 ;;
+        esac
+        ;;
+
+    view|toggleview|tag|toggletag) dwm-msg run_command "$1" $(getbin "$2") ;;
+    toggleviewright) dwmc toggleview "$(echo "$(get_current_tag)+1" | bc)" ;;
+    viewall) dwm-msg run_command view 511 ;;
+    tagall) dwm-msg run_command tag 511 ;;
+
+    next) dwm-msg run_command focusstack 1 ;;
+    prev) dwm-msg run_command focusstack -1 ;;
+
+    incmfact) dwm-msg run_command setmfact 0.025 ;;
+    decmfact) dwm-msg run_command setmfact "-0.025" ;;
+    resmfact) dwm-msg run_command setmfact 1.5 ;;
+
+    incgaps) dwm-msg run_command setgaps 5 ;;
+    decgaps) dwm-msg run_command setgaps "-5" ;;
+
+    *) eval "dwm-msg run_command $*"
+esac
+}
+
+getbin()
+{
+    [ -z "$1" ] && echo 0 && return
+    tag=$1
+    [ "$tag" -gt 9 ] || [ "$tag" -lt 1 ] && return
+    echo $((1<<tag-1))
+}
+
+set_layout()
+{
+    dwm-msg get_layouts |
+        sed ':a;N;$!ba;s/",\n//g' |
+    	awk '/symbol/{print $2" "$4}' |
+        tr -d '"' |
+        sed '/^ /d' |
+        awk -v nmatch="$1" '{i++}i==nmatch{print $2}' |
+        xargs dwm-msg run_command setlayoutsafe
+}
+
+get_current_tag()
+{
+    dwm-msg get_monitors |
+        awk '/current/{print $2; exit}' |
+        awk -F "," '{print $1}' |
+        xargs sh -c '
+            bin="$(echo "obase=2;${1}" | bc)"
+            echo "${#bin}"
+            ' "${0}"
+}
+
+main "$@"
+exit

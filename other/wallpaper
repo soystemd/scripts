@@ -5,13 +5,17 @@
 #	If given a directory, choose random file in it.
 
 # Make the directory
-mkdir -p "$XDG_DATA_HOME/paper"
+wall="$XDG_DATA_HOME/wallpaper"
+mkdir -p "$wall"
 
 # Path to symlink to wallpaper
-wall_main="$XDG_DATA_HOME/paper/wall_main"
+wall_main="$wall/wall_main"
 
 # Path to a backup wallpaper to use if the actual one is cucked
-wall_bak="$XDG_DATA_HOME/paper/wall_bak"
+wall_bak="$wall/wall_bak"
+
+# Path to a solid black wallpaper
+wall_black="$wall/wall_black"
 
 # Set wallpaper using feh.
 apply_wall() {
@@ -25,13 +29,18 @@ wall_link="$wall_main"
 # Handle -b option
 case "$1" in
 
-    -b | --backup)
+    --backup)
 
         bak=true
         wall_link="$wall_bak"
         wall_main="$wall_bak"
         bak_word="Backup "
         shift
+        ;;
+
+    --black)
+        feh --no-fehbg --bg-fill "$wall_black" || exit 1
+        exit 0
         ;;
 
     -h | --help)
