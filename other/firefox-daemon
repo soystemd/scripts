@@ -1,0 +1,40 @@
+#!/bin/sh
+# Hide a firefox window to keep it running in the background
+# for faster firefox startup.
+
+# Config
+file="/tmp/firefox-daemon"
+
+hide_current()
+{
+    xdotool search --name "Mozilla Firefox" |
+    awk '{print $0; exit}' |
+    tee "$file" |
+    xargs xdotool windowunmap
+}
+
+show_hidden()
+{
+    [ ! -r "$file" ] && return
+    xdotool windowmap "$(cat "$file")"
+}
+
+case "$1" in
+
+    init)
+        show_hidden
+        setsid -f firefox
+        sleep 2.5
+        hide_current
+        ;;
+
+    on)
+        show_hidden
+        hide_current
+        ;;
+
+    off)
+        show_hidden
+        rm -f "$file"
+        ;;
+esac
