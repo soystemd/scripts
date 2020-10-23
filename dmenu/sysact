@@ -144,7 +144,7 @@ res()
 
 xorg()
 {
-    dmenu-prompt "$prompt_xorg" "killall Xorg"
+    dmenu-prompt "$prompt_xorg" "killall pulseaudio; sleep 0.2; killall Xorg"
 }
 
 main "$@"
