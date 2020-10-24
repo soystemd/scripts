@@ -1,0 +1,16 @@
+#!/bin/sh
+sleep 1
+( slock; killall lock ) &
+sleep 0.2
+xset dpms force off
+mon=off
+while true; do
+    idle="$(xprintidle)"
+    if [ "$idle" -ge "4000" ] && [ "$mon" = "on" ]; then
+        mon=off
+        xset dpms force off
+    elif [ "$idle" -lt "4000" ] && [ "$mon" = "off" ]; then
+        mon=on
+    fi
+    sleep 0.2
+done

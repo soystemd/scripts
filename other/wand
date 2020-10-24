@@ -145,17 +145,17 @@ fi
 matched_aliases=$(\
     echo "$alias_list" |\
     awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ &&\
-    $0~/\<'"$pattern"'/ {print $0;exit}')
+    $0~/\<'"$pattern"'/ {print $0; exit}')
 
 # Get the line above the matching aliases line (which contains the commands)
 cmd=$(\
     echo "$alias_list" | awk -v ptrn="$matched_aliases"\
         '$0!~ptrn { line = $0 }\
-        $0~ptrn { print line }')
+        $0~ptrn { print line; exit }')
 
 # Seperate command's class from the command itself
-class=$(echo "$cmd" | awk '{print $1}')
-run=$(echo "$cmd" | awk '{$1="";sub(/ /,"");print $0}')
+class=$(echo "$cmd" | awk '{print $1; exit}')
+run=$(echo "$cmd" | awk '{$1="";sub(/ /,"");print $0; exit}')
 
 # Output some debugging details and exit right here, if -d option was passed
 [ "$devel" = "true" ] &&

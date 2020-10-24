@@ -1,0 +1,12 @@
+#!/bin/sh
+
+file="$XDG_CONFIG_HOME/uGet/Setting.json"
+line='			"name": 400,'
+
+new_file="$(
+    awk '/"Width"/ {print NR}' "$file" |
+        xargs -I {} awk -v line="$line" '
+            {if(NR == {}+2) print line; else print $0}' "$file"
+    )"
+
+echo "$new_file" > "$file"
