@@ -47,4 +47,7 @@ figlet "copy aborted."
     exit 1
 fi
 figlet "copy finished."
-read
+
+if test "`find "$file" -mmin +2`"; then
+    read
+fi

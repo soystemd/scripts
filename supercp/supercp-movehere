@@ -43,7 +43,6 @@ if [ "$fallback" = "true" ]; then
 else
     ( cat "$file"; echo "$dest" ) | xargs -d "\n" supermv
 fi
-mvf
 
 # done
 if [ "$?" -ne 0 ]; then
@@ -53,4 +52,8 @@ figlet "move aborted."
     exit 1
 fi
 figlet "move finished."
-read
+
+if test "`find "$file" -mmin +2`"; then
+    read
+fi
+mvf
