@@ -1,0 +1,43 @@
+#!/bin/sh
+# Check if uget/aria2 has any active downloads every x seconds.
+# if no active downloads detected for y cycles, suspend the system.
+
+interval=20 # in seconds
+count=3
+
+# Exit if uget not running.
+text="$(aria2p show | awk '{print $3; exit}')"
+[ "$text" != "PROGRESS" ] && echo "error: cannot connect to uget/aria2." && exit 1
+
+echo "connected to uget."
+echo "go to sleep now. we're good."
+
+get_active_dl_count()
+{
+    aria2p show | awk '$2~/active/' | wc -l
+}
+
+i=0;
+while true; do
+
+    sleep "$interval"
+
+    dlcount="$(get_active_dl_count)"
+
+    if [ "$dlcount" = "0" ]; then
+        i=$(( i + 1 ))
+        notify-send "uget-sysact" "no active downloads detected."
+    else
+        i=0
+    fi
+
+    if [ "$i" -ge "$count" ]; then
+        echo; echo
+        clock
+        echo "all uget downloads complete."
+        echo "suspending now."
+        echo; echo
+        sysact suspend
+        exit
+    fi
+done
