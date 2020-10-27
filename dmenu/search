@@ -1,4 +1,5 @@
 #!/bin/sh
 search_string="$(dmenu-ask "Search")"
 [ -z "$search_string" ] && exit 1
-firefox --search "$search_string"
+surfraw sx -url=m2 "$search_string"
+#firefox --search "$search_string"
