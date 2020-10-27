@@ -1,0 +1,8 @@
+#!/bin/sh
+# Check if transmission has any active downloads.
+# suspend if no torrents left.
+logger -t trans-sysact "transmission done, system suspended."
+sysact suspend
+logger -t trans-sysact "system awake."
+#[ -z "$(transmission-remote 127.0.0.1 --torrent=1 -i)" ] && sysact suspend
+#transmission-remote 127.0.0.1 -l | grep -v -e " 100% " -e "^Sum" -e "^ID" -e " Stopped " | wc -l
