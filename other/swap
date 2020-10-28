@@ -1,0 +1,10 @@
+#!/bin/sh
+# swap the contents of two files,
+# while keeping their names.
+
+dir="$(dirname "$1")"
+TMPFILE="${dir}/tmp.$$"
+
+mv -n -- "$1"       "$TMPFILE" &&
+mv -n -- "$2"       "$1"       &&
+mv -n -- "$TMPFILE" "$2"
