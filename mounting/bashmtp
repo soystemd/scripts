@@ -1,24 +1,10 @@
 #!/bin/bash
-# My android mtp mounting script, using jmtpfs. so make sure youu install that.
-# Because all the other methods suck.
+# My android mtp mounting script. uses jmtpfs. so make sure you install that.
+# Because all the other methods of mtp mounting suck.
 # So ofcourse I had to write my fucking own.
 
 # Config
 top_level_mount_dir="$HOME/Mount/MTP"
-
-# Functions
-# Delete temp files
-cleanup() {
-    find -P /tmp -maxdepth 1 -name automtpmount\* -delete > /dev/null 2>&1
-}
-# Cleanup and exit
-cleanup_and_exit() {
-    cleanup
-    echo; echo "Exiting..."
-    exit 0
-}
-# Cleanup and exit upon receiving SIGINT
-trap "cleanup_and_exit" SIGINT
 
 
 # Check if the user wants to proceed
@@ -43,26 +29,27 @@ jmtpfs > /dev/null 2>&1
 jmtpfs -l > /dev/null 2>&1
 
 
-# Make temp files
-devices_info_list=$(mktemp /tmp/automtpmount.XXXXXXXX)
-devices_vendor_list=$(mktemp /tmp/automtpmount.XXXXXXXX)
-devices_id_list=$(mktemp /tmp/automtpmount.XXXXXXXX)
-devices_name_list=$(mktemp /tmp/automtpmount.XXXXXXXX)
-
-
 # Build some lists of available/detected devices
 echo "Building list of devices..."
-jmtpfs -l | awk 'f;/Available/ {f=1}' |
-    awk '!seen[$0]++'                          > "$devices_info_list"
+devices_info_list="$(
+    jmtpfs -l | awk 'f;/Available/ {f=1}' |
+        awk '!seen[$0]++'
+    )"
 
-awk -F ", " '{print $6}'\
-    "$devices_info_list"                       > "$devices_vendor_list"
+devices_vendor_list="$(
+    echo "$devices_info_list" |
+        awk -F ", " '{print $6}'
+    )"
 
-awk '{print $1 substr($2, 1, length($2)-1)}'\
-    "$devices_info_list"                       > "$devices_id_list"
+devices_id_list="$(
+    echo "$devices_info_list" |
+        awk '{print $1 substr($2, 1, length($2)-1)}'
+    )"
 
-jmtpfs -l | awk '/Device/ \
-    {print substr($0, index($0, $8))}'         > "$devices_name_list"
+devices_name_list="$(
+    jmtpfs -l |
+        awk '/Device/ {print substr($0, index($0, $8))}'
+    )"
 
 
 # Exit if the list of devices is empty (no device found)
@@ -121,9 +108,6 @@ do
     ((i = i + 1))
 done
 
-
-# Do the cleaning
-cleanup
 
 # Prompt the exit
 echo -e "\n    Done.\n"; read -p "Press enter to exit..."

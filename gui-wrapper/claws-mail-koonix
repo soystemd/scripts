@@ -9,7 +9,9 @@ case "$1" in
 esac
 
 # Launch server in background
-if [ "$server" = "true" ]; then hydroxide serve &; fi
+if [ "$server" = "true" ]; then
+    hydroxide serve &
+fi
 
 #[ -n "$1" ] && git checkout "$1"
 

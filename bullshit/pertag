@@ -1,0 +1,41 @@
+#!/bin/sh
+
+tmpdir=/tmp/koonix-stuff/pertag
+mkdir -p "$tmpdir"
+
+case "$1" in
+    -l | --current-tag-layout)
+        layout="$2"
+        tag=$(dwm-msg get_monitors |
+                awk '/current/{print $2; exit}' |
+                awk 'BEGIN{FS=OFS=""};{$NF=""; print $0}')
+        echo "$layout" > "${tmpdir}/${tag}"
+        ;;
+    "")
+        dwm-msg --ignore-reply subscribe tag_change_event |
+            jq --unbuffered '.tag_change_event.new_state.selected' |
+            \
+            while IFS=$'\n' read -r tag; do
+
+                old_layout="$new_layout"
+                new_layout="$(dwm-msg get_monitors |
+                    awk '/current/{print $2}' |
+                    awk 'END{print}' |
+                    awk 'BEGIN{FS=OFS=""};{$NF=""; print $0}')"
+
+                file="${tmpdir}/${tag}"
+                [ ! -f "$file" ] && continue
+
+                echo
+                echo "old: $old_layout"
+                echo "new: $new_layout"
+                echo
+
+                [ "$old_layout" = "$new_layout" ] &&
+                    dwmc layout "$(cat "$file")" --no-extra && continue
+
+                dwmc layout "$(cat "$file")"
+
+            done
+        ;;
+esac

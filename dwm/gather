@@ -1,0 +1,23 @@
+#!/bin/sh
+# keep windows of a program in one tag.
+
+# devel:
+# Trap for updating the statusbar at will
+# trap 'ignore_this_firefox_window' SIGTRAP
+
+# args
+tag="$2"
+class="$1"
+[ -z "$tag" ] && echo give args && exit 1
+[ -z "$class" ] && echo give args && exit 1
+
+# get all window id of that program
+id_list() { xdotool search --class "$class"; }
+
+# infinite loop
+dwm-msg --ignore-reply subscribe client_focus_change_event  |
+    jq --unbuffered '.client_focus_change_event.new_win_id' |
+        while IFS=$'\n' read -r new_win_id; do
+            xdotool search --class "$class" | grep -q "$new_win_id" &&
+                dwmc tag "$tag" && dwmc view "$tag"
+        done

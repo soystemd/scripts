@@ -42,11 +42,11 @@ case "$class" in
 # TUI (Terminal user interface) program
     -tui)
         setsid -f\
-            $shell -c "eval \"\
+            $shell -c "eval '\
             \
-            $terminal -e $run\
+            $terminal -e $run \
             \
-            \""\
+            '"\
             >/dev/null 2>&1
         term_transp
         ;;
@@ -55,11 +55,11 @@ case "$class" in
 # Edit a file
     -edit)
         setsid -f\
-            $shell -c "eval \"\
+            $shell -c "eval '\
             \
-            $terminal -e $editor $run\
+            $terminal -e $editor $run \
             \
-            \""\
+            '"\
             >/dev/null 2>&1
         term_transp
         ;;
@@ -70,7 +70,7 @@ case "$class" in
         setsid -f\
             $terminal -e $shell -c "\
             \
-            cd "$run"; exec $int_shell"\
+            cd "$run"; exec $int_shell" \
             \
             >/dev/null 2>&1
         term_transp
@@ -80,11 +80,11 @@ case "$class" in
 # Interactive commands
     -cmd | -int)
         setsid -f\
-            $shell -c "eval \"\
+            $shell -c "eval '\
             \
-            $terminal -e $int_shell $int_shell_opts '$run; exec $int_shell'\
+            $terminal -e $int_shell $int_shell_opts '$run; exec $int_shell' \
             \
-            \""\
+            '"\
             >/dev/null 2>&1
         term_transp
         ;;
@@ -92,21 +92,21 @@ case "$class" in
 # GUI Programs, Background scripts
     -gui | -bkgnd)
         setsid -f\
-            $shell -c "eval \"\
+            $shell -c "eval '\
             \
             $run\
             \
-            \""\
+            '"\
             >/dev/null 2>&1
         ;;
 
 # Foreground
     -fgnd)
-        $shell -c "eval \"\
+        $shell -c "eval '\
             \
-            $run\
+            $run \
             \
-            \""
+            '"
         ;;
 esac
 }
@@ -127,13 +127,13 @@ gory()
 # Remove all comments and empty lines from the config file,
 # and handle backslash line breaks
 alias_list=$(\
-    cat "$alias_file" |\
-    awk 'BEGIN{FS=OFS="#"}; {print $1}' | awk NF |\
+    cat "$alias_file" |
+    awk 'BEGIN{FS=OFS="#"}; {print $1}' | awk NF |
     sed ':a;N;$!ba;s/\\\n//g')
 
 # List all the aliases only, and exit right here, if -l option was passed
 if [ "$list_aliases_and_exit" = "true" ]; then
-    echo "$alias_list" |\
+    echo "$alias_list" |
     awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ \
         {print $0}' | tr ' ' '\n' | awk NF
     exit 0
@@ -141,8 +141,8 @@ fi
 
 # Find the first matching aliases line
 matched_aliases=$(\
-    echo "$alias_list" |\
-    awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ &&\
+    echo "$alias_list" |
+    awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ && \
     $0~/\<'"$pattern"'/ {print $0; exit}')
 
 # Get the line above the matching aliases line (which contains the commands)
@@ -171,7 +171,7 @@ fi
 # Check if config file exists and is readable
 checkfile()
 {
-[ ! -r "$alias_file" ] &&\
+[ ! -r "$alias_file" ] &&
     echo "error: $alias_file not found" && exit 1
 }
 

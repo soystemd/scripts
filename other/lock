@@ -1,0 +1,61 @@
+#!/bin/sh
+# screen locking script.
+# requires: slock, xprintidle, xset.
+
+# Config
+dpms_delay_msec=60000
+lock_cmd=slock
+lock_cmd_alt=slock-alt
+
+# Init variables
+pause=true
+dpms=true
+cmd="$lock_cmd"
+
+# Handle args
+arg="$1"
+while [ -n "$1" ]; do
+    case "$1" in
+        --no-pause) pause=false ;;
+        --no-dpms) dpms=false ;;
+        --alt) cmd="$lock_cmd_alt" ;;
+        *) break ;;
+    esac
+    shift
+done
+
+# Fix keyboard layout and stuff before locking
+remaps
+
+# Pause all playing media before locking
+[ "$pause" = true ] && pause-all &
+
+# Lock the screen and kill this script after slock exits
+(
+    eval "$cmd"
+    remaps
+    sleep 1
+    remaps
+    sleep 2
+    remaps
+    killall lock
+) &
+
+# dpms function, used below
+dpms()
+{
+    mon=on
+    while true; do
+        idle="$(xprintidle)"
+        if [ "$idle" -ge "$dpms_delay_msec" ] && [ "$mon" = "on" ]; then
+            mon=off
+            xset dpms force off
+        elif [ "$idle" -lt "$dpms_delay_msec" ] && [ "$mon" = "off" ]; then
+            mon=on
+        fi
+        sleep 5
+    done
+}
+
+# Turn off the monitor if idle
+[ "$dpms" = true ] && dpms

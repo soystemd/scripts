@@ -37,7 +37,9 @@ while true; do
         echo "all uget downloads complete."
         echo "suspending now."
         echo; echo
+        logger -t trans-sysact "uget done, system suspended."
         sysact suspend
+        logger -t trans-sysact "system awake."
         exit
     fi
 done

@@ -11,8 +11,8 @@ prompt="System Action:"
 delimiter="->"
 
 actions="
- Lock-> lock
 鈴 Suspend-> sus
+ Lock-> lock
 ⏻ Poweroff-> off
  Reboot-> res
  Kill Xorg-> xorg
@@ -39,18 +39,14 @@ lock_cmd_alt=slock-alt
 # Handle options and stuff
 main()
 {
-if   [ "$1" = lock ] && [ "$2" = --break ]; then lock $lock_cmd_alt
-elif [ "$2" = lock ] && [ "$1" = --break ]; then lock $lock_cmd_alt
-else
     case "$1" in
         reboot | reset | restart) res ;;
         poweroff | shutdown) off ;;
         suspend | sleep) sus ;;
-        lock) lock ;;
+        lock) shift; lock "$@" ;;
         xorg) xorg ;;
         *) ask ;;
     esac
-fi
 }
 
 
@@ -83,13 +79,7 @@ ask()
 
 lock()
 {
-    remaps
-    pause-all
-    [ -n "$1" ] && eval "$1" || $lock_cmd
-    sleep 1
-    remaps
-    sleep 2
-    remaps
+    command lock "$@"
 }
 
 

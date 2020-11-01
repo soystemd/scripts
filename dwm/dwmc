@@ -15,17 +15,18 @@ main()
 case "$1" in
 
     layout)
-
         shift;
         case "$1" in
-            grid)    set_layout 1 ;;
-            dwindle) set_layout 2 ;;
-            deck)    set_layout 3 ;;
-            cmaster) set_layout 4 ;;
-            monocle) set_layout 5 ;;
-            float)   set_layout 6 ;;
+            grid)    set_layout 1; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL ;;
+            dwindle) set_layout 2; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
+            deck)    set_layout 3; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
+            cmaster) set_layout 4; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL && dwmc setmfact 1.9 ;;
+            monocle) set_layout 5; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
+            float)   set_layout 6; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL ;;
+            *) exit 1 ;;
         esac
-        ;;
+        pgrep pertag && pertag --current-tag-layout "$1"
+    ;;
 
     view|toggleview|tag|toggletag) dwm-msg run_command "$1" $(getbin "$2") ;;
     toggleviewright) dwmc toggleview "$(echo "$(get_current_tag)+1" | bc)" ;;
@@ -41,6 +42,8 @@ case "$1" in
 
     incgaps) dwm-msg run_command setgaps 5 ;;
     decgaps) dwm-msg run_command setgaps "-5" ;;
+
+    getcurrtag) get_current_tag ;;
 
     *) eval "dwm-msg run_command $*"
 esac

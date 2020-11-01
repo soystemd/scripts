@@ -25,7 +25,7 @@ idle_threshold=90
 # Functions #
 #############
 
-# tmpfile path
+# temp file path
 tmpfile="/tmp/eagle-${USER}"
 
 main() {

@@ -1,0 +1,12 @@
+#!/bin/sh
+current_tag=$(dwmc getcurrtag)
+
+for tag in {1..9}; do
+    dwmc view $tag
+    dwmc layout grid --no-extra
+#    sleep 0.005
+done
+
+opaque -0 $TERMINAL
+dwmc resmfact
+dwmc view $current_tag

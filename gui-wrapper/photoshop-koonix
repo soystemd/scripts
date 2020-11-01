@@ -10,9 +10,9 @@ photoshop_tag=$((1<<7)) # Tag 8
 dwm-msg --ignore-reply subscribe tag_change_event |
   jq --unbuffered '.tag_change_event.new_state.selected' |
   while IFS=$'\n' read -r tag; do
-      [ "$tag" = "$photoshop_tag" ] && dwmc togglebar && bar=false
-      [ "$tag" != "$photoshop_tag" ] && [ "$bar" = "false" ] &&
-          dwmc togglebar && bar=true
+    [ "$tag" = "$photoshop_tag" ] && dwmc togglebar && bar=false
+    [ "$tag" != "$photoshop_tag" ] && [ "$bar" = "false" ] &&
+      dwmc togglebar && bar=true
   done &
 
 # Launch photoshop

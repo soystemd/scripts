@@ -10,6 +10,7 @@
 # Config
 opacity_transparent="0xdfffffff"
 opacity_opaque="0xffffffff"
+tmpdir=/tmp
 
 ######
 main() {
@@ -107,12 +108,12 @@ set_opacity_all_windows() {
 ######
 opaque_init() {
     remove_previous_status_files
-    mktemp -q "/tmp/opaque-${USER}-${window_class}-XXXXXX"
+    mktemp -q "$tmpdir/opaque-${USER}-${window_class}-XXXXXX"
     set_status
 }
 
 opaque_cleanup() {
-    find -P /tmp -maxdepth 1 -name opaque-\* -delete
+    find -P "$tmpdir" -maxdepth 1 -name opaque-\* -delete
 }
 
 exit_if_not_initialized() {
@@ -141,7 +142,7 @@ remove_previous_status_files() {
 
 get_status_file_path() {
     local status_file="$(\
-        find -P /tmp -maxdepth 1 -name opaque-${USER}-${window_class}\*)" ||\
+        find -P "$tmpdir" -maxdepth 1 -name opaque-${USER}-${window_class}\*)" ||\
         error "get_status_file_path failed"
     echo "$status_file"
 }
