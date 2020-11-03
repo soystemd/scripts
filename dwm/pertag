@@ -6,7 +6,7 @@ transp(){
 semitransp(){
     opaque -2 $TERMINAL >/dev/null 2>&1
 }
-opaque(){
+notransp(){
     opaque -1 $TERMINAL >/dev/null 2>&1
 }
 
@@ -29,11 +29,13 @@ while IFS=$'\n' read; do
             semitransp
             ;;
         monocle)
-            opaque
+            notranp
             ;;
         float)
             semitransp
             ;;
-        *) continue   ;;
+        *)
+            continue
+            ;;
     esac
 done
