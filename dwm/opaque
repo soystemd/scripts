@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Get class name of a program and make all it's instances
 # transparent, opaque or toggle it at will.
 #
@@ -8,7 +8,8 @@
 # toggle it off in those layouts, and Toggle it back on in tiling layouts.
 
 # Config
-opacity_transparent="0xdfffffff"
+opacity_transparent="0xddffffff"
+opacity_semitrans="0xefffffff"
 opacity_opaque="0xffffffff"
 tmpdir=/tmp
 
@@ -31,8 +32,9 @@ main() {
 # Handle Args
     case "$1" in
         -h | --help) print_help_and_exit 0 ;;
-        -0) set_all_windows_transparent ;;
-        -1) set_all_windows_opaque ;;
+        -0) set_all_windows transparent "$opacity_transparent" ;;
+        -1) set_all_windows opaque "$opacity_opaque" ;;
+        -2) set_all_windows semitrans "$opacity_semitrans" ;;
         -t) toggle_transparency_all_windows ;;
         -r) reapply_transparency_all_windows ;;
         -i) opaque_init ;;
@@ -45,49 +47,38 @@ main() {
 
 
 ######
-set_all_windows_opaque() {
-    set_opacity_all_windows "$opacity_opaque"
+set_all_windows() {
+    set_raw_opacity_all_windows "$2"
     exit_if_not_initialized no-print-error
-    set_status opaque
-}
-
-set_all_windows_transparent() {
-    set_opacity_all_windows "$opacity_transparent"
-    exit_if_not_initialized no-print-error
-    set_status transparent
+    set_status "$1"
 }
 
 toggle_transparency_all_windows() {
-    exit_if_not_initialized # toggling requires initialization
-
-    if [ "$(get_status)" = "opaque" ]; then
-        set_opacity_all_windows "$opacity_transparent"
-        set_status transparent
-        return
-    fi
-
-    set_opacity_all_windows "$opacity_opaque"
-    set_status opaque
+    exit_if_not_initialized # reapplying requires initialization
+    case "$(get_status)" in
+        opaque)
+            [ "$(dwmc getlayoutname)" = cmaster ] && set_all_windows semitrans "$opacity_semitrans" && return
+            set_all_windows transparent "$opacity_transparent"
+            ;;
+        semitrans) set_all_windows opaque "$opacity_opaque" ;;
+        transparent) set_all_windows opaque "$opacity_opaque" ;;
+    esac
 }
 
 reapply_transparency_all_windows() {
     exit_if_not_initialized # reapplying requires initialization
-
-    if [ "$(get_status)" = "opaque" ]; then
-        set_opacity_all_windows "$opacity_opaque"
-        set_status opaque
-        return
-    fi
-
-    set_opacity_all_windows "$opacity_transparent"
-    set_status transparent
+    case "$(get_status)" in
+        opaque) set_all_windows opaque "$opacity_opaque" ;;
+        semitrans) set_all_windows semitrans "$opacity_semitrans" ;;
+        transparent) set_all_windows transparent "$opacity_transparent" ;;
+    esac
 }
 ######
 
 
 
 ######
-set_opacity_all_windows() {
+set_raw_opacity_all_windows() {
     local window_id_list="$(\
         xdotool search --class "$window_class")"
 
@@ -161,7 +152,7 @@ error() {
 
 ######
 print_help_and_exit() {
-echo $'
+echo '
 Manipulate the transparency of all windows of the same class
 Requires a compositor to work
 

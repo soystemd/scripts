@@ -1,8 +1,8 @@
 #!/bin/sh
 
-##########
-# Config #
-##########
+# =========
+# = Config
+# =========
 
 prefix="[ "
 suffix=" ]"
@@ -11,8 +11,8 @@ prompt="System Action:"
 delimiter="->"
 
 actions="
-鈴 Suspend-> sus
  Lock-> lock
+鈴 Suspend-> sus
 ⏻ Poweroff-> off
  Reboot-> res
  Kill Xorg-> xorg
@@ -32,9 +32,9 @@ prompt_xorg="Really Kill Xorg?"
 lock_cmd=slock
 lock_cmd_alt=slock-alt
 
-###############################
-########## Functions ##########
-###############################
+# ============================
+#  ======= Functions ========
+# ============================
 
 # Handle options and stuff
 main()

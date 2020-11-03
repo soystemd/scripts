@@ -1,7 +1,7 @@
 #!/bin/sh
 # You can control dwm with this script.
 
-# layouts:
+# Layouts:
 #
 # 1 -> grid
 # 2 -> dwindle
@@ -9,6 +9,16 @@
 # 4 -> centered-master
 # 5 -> monocle
 # 6 -> floating
+
+# Config
+layout_list="
+grid
+dwindle
+deck
+cmaster
+monocle
+float
+"
 
 main()
 {
@@ -20,12 +30,12 @@ case "$1" in
             grid)    set_layout 1; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL ;;
             dwindle) set_layout 2; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
             deck)    set_layout 3; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
-            cmaster) set_layout 4; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL && dwmc setmfact 1.9 ;;
+            cmaster) set_layout 4; [ "$2" != "--no-extra" ] && opaque -2 $TERMINAL && dwmc setmfact 1.9 ;;
             monocle) set_layout 5; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
             float)   set_layout 6; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL ;;
             *) exit 1 ;;
         esac
-        pgrep pertag && pertag --current-tag-layout "$1"
+        exit
     ;;
 
     view|toggleview|tag|toggletag) dwm-msg run_command "$1" $(getbin "$2") ;;
@@ -44,8 +54,11 @@ case "$1" in
     decgaps) dwm-msg run_command setgaps "-5" ;;
 
     getcurrtag) get_current_tag ;;
+    getlayoutname) get_current_layout_name ;;
+    getlayoutlist) echo "$layout_list" | awk NF; exit 0 ;;
 
-    *) eval "dwm-msg run_command $*"
+    "") echo dwm control script; exit ;;
+    *) eval "dwm-msg run_command $*" ;;
 esac
 }
 
@@ -78,6 +91,27 @@ get_current_tag()
             echo "${#bin}"
             ' "${0}"
 }
+
+get_layout_address_list()
+{
+    dwm-msg get_layouts | awk '/address/'
+}
+
+get_current_layout_address()
+{
+    dwm-msg get_monitors | awk '/current/{print $2}' | awk 'END{print}' | tr -d ','
+}
+
+get_current_layout_number()
+{
+    get_layout_address_list | awk '$0~'"$(get_current_layout_address)"'{print NR}'
+}
+
+get_current_layout_name()
+{
+    echo "$layout_list" | awk NF | sed "$(get_current_layout_number)q;d"
+}
+
 
 main "$@"
 exit

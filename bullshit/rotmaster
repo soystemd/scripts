@@ -1,0 +1,8 @@
+#!/bin/sh
+
+dwm-msg --ignore-reply subscribe client_focus_change_event  |
+    jq --unbuffered '.client_focus_change_event.new_win_id' |
+        while IFS=$'\n' read; do
+            sleep 0.1
+            dwmc zoom
+        done

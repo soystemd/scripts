@@ -1,0 +1,39 @@
+#!/bin/sh
+
+transp(){
+    opaque -0 $TERMINAL >/dev/null 2>&1
+}
+semitransp(){
+    opaque -2 $TERMINAL >/dev/null 2>&1
+}
+opaque(){
+    opaque -1 $TERMINAL >/dev/null 2>&1
+}
+
+dwm-msg --ignore-reply subscribe tag_change_event |
+jq --unbuffered '.tag_change_event.monitor_number' |
+\
+while IFS=$'\n' read; do
+
+    case "$(dwmc getlayoutname)" in
+        grid)
+            transp
+            ;;
+        dwindle)
+            transp
+            ;;
+        deck)
+            transp
+            ;;
+        cmaster)
+            semitransp
+            ;;
+        monocle)
+            opaque
+            ;;
+        float)
+            semitransp
+            ;;
+        *) continue   ;;
+    esac
+done

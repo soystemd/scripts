@@ -1,12 +1,10 @@
 #!/bin/sh
 current_tag=$(dwmc getcurrtag)
-
+killall pertag
 for tag in {1..9}; do
     dwmc view $tag
-    dwmc layout grid --no-extra
-#    sleep 0.005
+    dwmc layout dwindle --no-extra
 done
-
 opaque -0 $TERMINAL
-dwmc resmfact
 dwmc view $current_tag
+setsid -f pertag
