@@ -1,6 +1,6 @@
 #!/bin/sh
 # screen locking script.
-# requires: slock, xprintidle, xset.
+# requires: slock, xprintidle, xset, my autolock script.
 
 # Config
 dpms_delay_msec=60000
@@ -30,14 +30,26 @@ remaps
 # Pause all playing media before locking
 [ "$pause" = true ] && pause-all &
 
-# Lock the screen and kill this script after slock exits
 (
+    # disable autolocking
+    auto=off
+    pgrep xautolock && auto=on
+    killall -q xautolock
+
+    # lock the screen
     eval "$cmd"
+
+    # apply key remaps again
     remaps
     sleep 1
     remaps
     sleep 2
     remaps
+
+    # re-enable autolocking if it was enabled before
+    [ "$auto" = on ] && setsid -f autolock
+
+    # kill this script
     killall lock
 ) &
 

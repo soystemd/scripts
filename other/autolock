@@ -1,0 +1,5 @@
+#!/bin/sh
+# session locking
+exec 2>&1
+exec >/dev/null
+xautolock -time 8 -locker "sysact lock"

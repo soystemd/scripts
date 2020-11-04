@@ -1,0 +1,6 @@
+#!/bin/sh
+empivi() {
+    notify-send --urgency=low "$(file --mime-type "$@" | awk -F": " '{print $2}')"
+    mpv --keep-open=always -- "$@"
+}
+sxiv -a -- "$@" || empivi "$@"
