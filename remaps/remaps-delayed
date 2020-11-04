@@ -1,0 +1,7 @@
+#!/bin/sh
+sleep 1
+remaps
+sleep 2
+remaps
+sleep 3
+remaps

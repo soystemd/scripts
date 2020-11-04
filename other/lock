@@ -10,6 +10,7 @@ lock_cmd_alt=slock-alt
 # Init variables
 pause=true
 dpms=true
+invoked_by_autolock=false
 cmd="$lock_cmd"
 
 # Handle args
@@ -19,6 +20,7 @@ while [ -n "$1" ]; do
         --no-pause) pause=false ;;
         --no-dpms) dpms=false ;;
         --alt) cmd="$lock_cmd_alt" ;;
+        --invoked-by-autolock) invoked_by_autolock=true ;;
         *) break ;;
     esac
     shift
@@ -32,22 +34,20 @@ remaps
 
 (
     # disable autolocking
-    auto=off
-    pgrep xautolock && auto=on
-    killall -q xautolock
+    autolock_state=off
+    if [ "$invoked_by_autolock" = false ]; then
+        pgrep autolock && autolock_state=on
+        killall -q autolock
+    fi
 
     # lock the screen
     eval "$cmd"
 
     # apply key remaps again
-    remaps
-    sleep 1
-    remaps
-    sleep 2
-    remaps
+    setsid -f remaps-delayed
 
     # re-enable autolocking if it was enabled before
-    [ "$auto" = on ] && setsid -f autolock
+    [ "$autolock_state" = on ] && setsid -f autolock
 
     # kill this script
     killall lock
@@ -57,10 +57,13 @@ remaps
 dpms()
 {
     mon=on
+    offset="$(xprintidle)"
     while true; do
-        idle="$(xprintidle)"
+        rawidle="$(xprintidle)"
+        idle="$(( rawidle - offset ))"
         if [ "$idle" -ge "$dpms_delay_msec" ] && [ "$mon" = "on" ]; then
             mon=off
+            offset=0
             xset dpms force off
         elif [ "$idle" -lt "$dpms_delay_msec" ] && [ "$mon" = "off" ]; then
             mon=on

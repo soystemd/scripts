@@ -1,5 +1,15 @@
 #!/bin/sh
-# session locking
-exec 2>&1
-exec >/dev/null
-xautolock -time 8 -locker "sysact lock"
+# automatic session locking on idle
+
+# Config
+lock_delay_minute=2
+
+pid="$(pgrep autolock | wc -l )"
+[ "$pid" -gt 2 ] && echo "autolock is already running" && exit
+lock_delay_msec=$(( lock_delay_minute * 60 * 1000 ))
+while true; do
+    idle="$(xprintidle)"
+    [ "$idle" -ge "$lock_delay_msec" ] &&
+        sysact lock --invoked-by-autolock
+    sleep 15
+done

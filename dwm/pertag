@@ -29,7 +29,7 @@ while IFS=$'\n' read; do
             semitransp
             ;;
         monocle)
-            notranp
+            notransp
             ;;
         float)
             semitransp
