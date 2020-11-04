@@ -19,14 +19,22 @@ wall_black="$wall/wall_black"
 
 # Set wallpaper using feh.
 apply_wall() {
-    feh --no-fehbg --bg-fill "$wall_main" ||
-    feh --no-fehbg --bg-fill "$wall_bak"
+    feh --no-fehbg "$fit" "$wall_main" ||
+    feh --no-fehbg "$fit" "$wall_bak"
 }
 
 wall_link="$wall_main"
 
 ######################################
 # Handle -b option
+case "$2" in
+    center) fit="--bg-center" ;;
+    fill) fit="--bg-fill" ;;
+    max) fit="--bg-max" ;;
+    scale) fit="--bg-scale" ;;
+    tile) fit="--bg-tile" ;;
+    *) fit="--bg-fill"
+esac
 case "$1" in
 
     --backup)
@@ -39,13 +47,13 @@ case "$1" in
         ;;
 
     --black)
-        feh --no-fehbg --bg-fill "$wall_black" || exit 1
+        feh --no-fehbg "$fit" "$wall_black" || exit 1
         exit 0
         ;;
 
     -h | --help)
-
         echo "wallpaper handler"
+        echo "fit options: center, fill, max, scale, tile"
         exit 0
         ;;
 esac

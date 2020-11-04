@@ -57,7 +57,7 @@ ftp_unmount()
 ftp_force_unmount()
 {
     command_output="$(
-        2>&1 sudo umount "$mnt_path" && echo "FTP Unmounted"
+        2>&1 sudo umount --force "$mnt_path" && echo "FTP Unmounted"
         )"
 }
 
