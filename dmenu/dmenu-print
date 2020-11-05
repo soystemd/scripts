@@ -11,6 +11,7 @@ prompt="Choose printer:"
 delimiter="->"
 
 actions="
+GUI-> guiprnt
 HP Laser Printer-> prnt HP_M1132
 Epson Photo Printer-> prnt EPSON_L800
 "
@@ -24,8 +25,8 @@ Epson Photo Printer-> prnt EPSON_L800
 main()
 {
     case "$1" in
-        -epson | -photo | -ink) eps "$@" ;;
-        -hp | -laser | -toner) hp "$@" ;;
+        -epson | -photo | -ink) prnt EPSON_L800 "$@" ;;
+        -hp | -laser | -toner) prnt HP_M1132 "$@" ;;
         *) ask "$@" ;;
     esac
 }
@@ -59,8 +60,15 @@ ask()
 
 prnt()
 {
-    msg="$(2>&1 /usr/bin/lp -q 20 -d "$@")"
+    printer="$1"
+    shift
+    msg="$(2>&1 /usr/bin/lp -q 20 -d "$printer" -- "$@")"
     /usr/bin/notify-send -u low -- "Printing via $1" "$msg"
+}
+
+guiprnt()
+{
+    setsid -f guiprint "$@"
 }
 
 main "$@"

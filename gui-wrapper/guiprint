@@ -1,0 +1,2 @@
+#!/bin/sh
+/usr/bin/gtklp -c "$XDG_CONFIG_HOME/gtklp" -- "$@"
