@@ -48,9 +48,11 @@ main() {
 
 ######
 set_all_windows() {
-    set_raw_opacity_all_windows "$2"
+    local status="$1"
+    local opacity="$2"
+    set_raw_opacity_all_windows "$opacity"
     exit_if_not_initialized no-print-error
-    set_status "$1"
+    set_status "$status"
 }
 
 toggle_transparency_all_windows() {

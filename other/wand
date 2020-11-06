@@ -114,7 +114,7 @@ esac
 # Reapply terminal transparency to new terminal windows
 term_transp()
 {
-    sleep 0.1
+    sleep 0.3
     opaque -r "$terminal" >/dev/null 2>&1
 }
 
