@@ -1,8 +1,60 @@
 #!/bin/sh
 # Check if transmission has any active downloads.
 # suspend if no torrents left.
-logger -t trans-sysact "transmission done, system suspended."
-sysact suspend
-logger -t trans-sysact "system awake."
-#[ -z "$(transmission-remote 127.0.0.1 --torrent=1 -i)" ] && sysact suspend
-#transmission-remote 127.0.0.1 -l | grep -v -e " 100% " -e "^Sum" -e "^ID" -e " Stopped " | wc -l
+
+# Config
+interval_seconds=20
+ncycles=3
+
+# delay after all downloads complete and before suspending the system
+delay_minutes=30
+
+trans()
+{
+    transmission-remote 127.0.0.1 -l 2>&1
+}
+
+[ -n "$(trans | grep "Couldn't connect")" ]
+    && echo cannot connect to transmission. && exit 1
+
+firstline_charcount=$(trans | awk '{print;exit}' | wc --chars)
+lastcolumn_charcount=$(trans | awk '{print $9;exit}' | wc --chars)
+range=$((firstline_charcount - lastcolumn_charcount))
+stats="$(trans | cut -c 1-${range})"
+
+no_torrent_left()
+{
+    [ -z "$(echo "$stats" |
+        grep -v -e " 100% " -e "Done" -e " Stopped " -e "^Sum")" ] &&
+        echo true && return
+    echo false
+}
+
+i=0;
+while true; do
+
+    sleep "$interval_seconds"
+
+    if [ "$(no_torrent_left)" = true ]; then
+        i=$(( i + 1 ))
+        notify-send "transmission-sysact" \
+            "torrents complete. suspending in a few seconds."
+    else
+        i=0
+    fi
+
+    if [ "$i" -ge "$ncycles" ]; then
+        echo "all torrents complete."
+        echo "suspending in $delay_minutes minutes."
+        sleep ${delay_minutes}m
+        echo; echo
+        clock
+        echo "all torrents complete."
+        echo "suspending now."
+        echo; echo
+        logger -t uget-sysact "torrents complete, suspending system now."
+        sysact suspend
+        logger -t uget-sysact "system awaken."
+        exit
+    fi
+done

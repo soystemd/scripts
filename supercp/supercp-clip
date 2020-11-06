@@ -1,7 +1,12 @@
 #!/bin/sh
 file="/tmp/supercp-${USER}"
-[ -z "$*" ] && exit 1
-[ "$1" = "--add" ] && shift || rm -f "$file"
+[ -z "$*" ] && echo give arg && exit 1
+clearfile=true
+case "$1" in
+    --add | -a) clearfile=false; shift ;;
+    --clear | -c) rm -f "$file"; exit ;;
+esac
+[ "$clearfile" = true ] && rm -f "$file"
 for arg; do
     echo "$arg" >> "$file"
 done

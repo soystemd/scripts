@@ -1,12 +1,17 @@
 #!/bin/sh
 # Check if uget/aria2 has any active downloads every x seconds.
-# if no active downloads detected for y cycles, suspend the system.
+# if no active downloads detected for n cycles,
+# suspend the system (with n minutes of delay).
 
-interval=20 # in seconds
-count=3
+# Config
+interval_seconds=20
+ncycles=3
+
+# delay after all downloads complete and before suspending the system
+delay_minutes=1
 
 # Exit if uget not running.
-text="$(aria2p show | awk '{print $3; exit}')"
+text="$(aria2p show 2>&1 | awk '{print $3; exit}')"
 [ "$text" != "PROGRESS" ] && echo "error: cannot connect to uget/aria2." && exit 1
 
 echo "connected to uget."
@@ -20,26 +25,28 @@ get_active_dl_count()
 i=0;
 while true; do
 
-    sleep "$interval"
+    sleep "$interval_seconds"
 
-    dlcount="$(get_active_dl_count)"
-
-    if [ "$dlcount" = "0" ]; then
+    if [ "$(get_active_dl_count)" = "0" ]; then
         i=$(( i + 1 ))
-        notify-send "uget-sysact" "no active downloads detected."
+        notify-send "uget-sysact" \
+            "uget downloads complete. suspending in a few seconds."
     else
         i=0
     fi
 
-    if [ "$i" -ge "$count" ]; then
+    if [ "$i" -ge "$ncycles" ]; then
+        echo "all uget downloads complete."
+        echo "suspending in $delay_minutes minutes."
+        sleep ${delay_minutes}m
         echo; echo
         clock
         echo "all uget downloads complete."
         echo "suspending now."
         echo; echo
-        logger -t trans-sysact "uget done, system suspended."
+        logger -t uget-sysact "uget downloads complete, suspending system now."
         sysact suspend
-        logger -t trans-sysact "system awake."
+        logger -t uget-sysact "system awaken."
         exit
     fi
 done
