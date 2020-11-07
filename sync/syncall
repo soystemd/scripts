@@ -1,0 +1,5 @@
+#!/bin/sh
+cd "/home/$USER/.mozilla/firefox"
+source ffsync
+cd "/home/$USER/.cache/ccls-cache-log"
+source cclssync

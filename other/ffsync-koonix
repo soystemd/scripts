@@ -1,5 +1,0 @@
-#!/bin/sh
-export USER=koonix
-ffsync="/home/$USER/.local/bin/other/_ffsync"
-cd /home/koonix/.mozilla/firefox
-"$ffsync" wn1iogv8.default-release
