@@ -26,3 +26,5 @@ else
 	rsync -av ./$static/ ./$link/
 	touch $link/.unpacked
 fi
+
+echo "ffsync finished syncing firefox profile."
