@@ -1,5 +1,5 @@
 #!/bin/sh
-cd "/home/$USER/.mozilla/firefox"
-source ffsync
-cd "/home/$USER/.cache/ccls-cache-log"
-source cclssync
+export USER=koonix
+path="/home/$USER/.local/bin/sync"
+source "$path/ffsync"
+source "$path/cclssync"

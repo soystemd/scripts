@@ -21,6 +21,7 @@ actions="
 reboot_choices="
  Artix-> reboot=artix
  Windows-> reboot=windows
+ Ubuntu-> reboot=ubuntu
  Devuan-> reboot=devuan
 "
 
@@ -126,6 +127,7 @@ res()
                 arch) ;;
                 windows) sudo -A grub-reboot Windows ;;
                 devuan) sudo -A grub-reboot Devuan ;;
+                ubuntu) sudo -A grub-reboot Ubuntu ;;
             esac
             sudo -A reboot
         "

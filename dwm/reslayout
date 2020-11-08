@@ -7,4 +7,5 @@ for tag in {1..9}; do
 done
 opaque -0 $TERMINAL
 dwmc view $current_tag
+dwmc resmfact
 setsid -f pertag
