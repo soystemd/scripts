@@ -1,0 +1,7 @@
+ffmpeg -y \
+-video_size 800x600 \
+-framerate 30 -f x11grab -i :0.0 \
+-f pulse -ac 2 -i default \
+/tmp/screen1_recording_`date '+%Y-%m-%d_%H-%M-%S'`.mp4 \
+&> /tmp/screen1_recording_`date '+%Y-%m-%d_%H-%M-%S'`.log
+
