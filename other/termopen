@@ -2,5 +2,5 @@
 # Get a path and open a terminal in that path.
 
 cd "$1"
-setsid -f $TERMINAL > /dev/null 2>&1
+setsid -f $TERMINAL -e ranger > /dev/null 2>&1
 exit 0
