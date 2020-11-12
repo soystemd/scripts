@@ -14,7 +14,7 @@
 
 
 # Config
-ftp_ip="192.168.1.15:9999"
+ftp_ip="192.168.1.15:8888"
 mnt_path="$HOME/Mount/FTP"
 
 main()

@@ -1,0 +1,35 @@
+#!/bin/sh
+# special purpose personal script.
+wand bashmount
+
+while true; do
+    sleep 3
+    flash="$(find /run/media/$USER -mindepth 1 -type d | awk '{print $0; exit}')"
+    [ -n "$flash" ] && break
+done
+
+echo "flash found: $(basename $flash)"
+
+cd "/mnt/drives/d/downloads/serial-maskhare"
+
+while true; do
+
+    [ ! -f *.aria2 ] &&
+        sleep 2 &&
+        [ ! -f *.aria2 ] &&
+        sleep 2 &&
+        [ ! -f *.aria2 ] &&
+        echo end of downloads detected. &&
+        echo getting down now. &&
+        mkdir -p $flash/serial &&
+        rsync -av --info=progress2 *.mp4 $flash/serial/ &&
+        figlet copied. &&
+        umount "$flash" &&
+        figlet unmounted. &&
+        exit 0 || exit 1
+
+    sleep 2
+
+done
+
+exit 0
