@@ -4,8 +4,8 @@
 # = Config
 # =========
 
-prefix="[ "
-suffix=" ]"
+prefix="/ "
+suffix=" /"
 prompt="Choose printer:"
 
 delimiter="->"
