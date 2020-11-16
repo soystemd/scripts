@@ -4,8 +4,8 @@
 # = Config
 # =========
 
-prefix="/ "
-suffix=" /"
+prefix=""
+suffix=""
 prompt="System Action:"
 
 delimiter="->"
@@ -15,7 +15,7 @@ actions="
 鈴 Suspend-> sus
 ⏻ Poweroff-> off
  Reboot-> res
- Kill Xorg-> xorg
+ Logout-> xorg
 "
 
 reboot_choices="

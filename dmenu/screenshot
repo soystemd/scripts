@@ -14,8 +14,8 @@ prompt_copy="Screenshot method (copy to clipboard):"
 save_to="/mnt/drives/d/downloads/artix/screenshot"
 
 # prefix and suffix should be
-prefix="/ "
-suffix=" /"
+prefix=""
+suffix=""
 
 # define action names and their commands
 delimiter="->"
