@@ -1,0 +1,5 @@
+#!/bin/sh
+# add more trackers to transmission torrents
+1>/dev/null pgrep transmission &&
+    wget -q --spider http://ifconfig.me &&
+    /usr/bin/env python /usr/bin/transmission-trackers
