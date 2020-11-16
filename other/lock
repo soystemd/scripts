@@ -3,7 +3,7 @@
 # requires: slock, xprintidle, xset, my autolock script.
 
 # Config
-dpms_delay_msec=60000
+dpms_delay_sec=120
 lock_cmd=slock
 lock_cmd_alt=slock-alt
 
@@ -14,7 +14,6 @@ invoked_by_autolock=false
 cmd="$lock_cmd"
 
 # Handle args
-arg="$1"
 while [ -n "$1" ]; do
     case "$1" in
         --no-pause) pause=false ;;
@@ -61,14 +60,14 @@ dpms()
     while true; do
         rawidle="$(xprintidle)"
         idle="$(( rawidle - offset ))"
-        if [ "$idle" -ge "$dpms_delay_msec" ] && [ "$mon" = "on" ]; then
+        if [ "$idle" -ge "$((dpms_delay_sec * 1000))" ] && [ "$mon" = "on" ]; then
             mon=off
             offset=0
             xset dpms force off
-        elif [ "$idle" -lt "$dpms_delay_msec" ] && [ "$mon" = "off" ]; then
+        elif [ "$idle" -lt "$((dpms_delay_sec * 1000))" ] && [ "$mon" = "off" ]; then
             mon=on
         fi
-        sleep 5
+        sleep 10
     done
 }
 

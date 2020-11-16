@@ -2,7 +2,7 @@
 # automatic session locking on idle
 
 # Config
-lock_delay_minute=5
+lock_delay_minute=10
 
 pid="$(pgrep autolock | wc -l )"
 [ "$pid" -gt 2 ] && echo "autolock is already running" && exit
