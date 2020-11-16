@@ -1,9 +1,8 @@
 #!/bin/sh
-#
 # You might notice all mpv commands are aliased to have this input-ipc-server
 # thing. That's just for this particular command, which allows us to pause
 # every single one of them with one command!
-#
+
 main () {
     case "$1" in
         p | pause ) pause  ;;
@@ -29,10 +28,17 @@ resume () {
 }
 
 toggle  () {
+
     file=/tmp/mpv-control
     [ ! -r "$file" ] && echo 1 > $file
-    [ "$(cat $file)" = "1" ] && pause && echo 0 > $file && exit
-    resume && echo 1 > $file
+
+    if [ "$(cat $file)" = "1" ]; then
+        pause
+        echo 0 > $file
+    else
+        resume
+        echo 1 > $file
+    fi
 }
 
 main "$@"
