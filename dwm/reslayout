@@ -3,7 +3,7 @@ current_tag=$(dwmc getcurrtag)
 killall pertag
 for tag in {1..9}; do
     dwmc view $tag
-    dwmc layout dwindle --no-extra
+    dwmc layout grid --no-extra
 done
 opaque -0 $TERMINAL
 dwmc view $current_tag
