@@ -1,20 +1,18 @@
 #!/bin/sh
 # All my keyboard and mouse remapping and settings and stuff is done here.
+xmodmaprc="$XDG_CONFIG_HOME/xmodmap/xmodmaprc"
+xcaperc="$XDG_CONFIG_HOME/xcape/xcaperc"
 
 # Set keyboard layout and model
 setxkbmap -model pc105 -layout us,ir
 
 # Remap one of my mouse's side buttons to middle click
-xmodmap -e "pointer = 1 9 3 4 5 6 7 8 2 10"
+xmodmap "$xmodmaprc"
 
 # Left super acts as escape if pressed and released
 # (Capslock is mapped to left super via skr)
 killall xcape 2>/dev/null
-xcape -e 'Super_L=Escape;XF86Launch5=Tab'
-
-# Advanced: Left ctrl acts as space if pressed and released
-# (Space is mapped to left ctrl via skr)
-# xcape -e 'Super_L=Escape;Control_L=space'
+xcape -e "$(cat "$xcaperc" | awk -F# '{print $1}' | awk NF | tr -d '\n')"
 
 # Advanced: Set key repeat rate
 xset r rate 200 60
