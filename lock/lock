@@ -1,0 +1,54 @@
+#!/bin/sh
+# screen locking script.
+# requires: slock, xprintidle, xset, my autolock script.
+
+# Config
+dpms_delay_sec=120
+lock_cmd=slock
+lock_cmd_alt=slock-alt
+
+# Init variables
+pause=true
+dpms=true
+invoked_by_autolock=false
+cmd="$lock_cmd"
+
+# Handle args
+while [ -n "$1" ]; do
+    case "$1" in
+        --no-pause) pause=false ;;
+        --no-dpms) dpms=false ;;
+        --alt) cmd="$lock_cmd_alt" ;;
+        --invoked-by-autolock) invoked_by_autolock=true ;;
+        *) break ;;
+    esac
+    shift
+done
+
+# Fix keyboard layout and stuff before locking
+remaps
+
+# Pause all playing media before locking
+[ "$pause" = true ] && pause-all &
+
+# disable autolocking
+autolock_state=off
+if [ "$invoked_by_autolock" = false ]; then
+    pgrep autolock && autolock_state=on
+    killall -q autolock
+fi
+
+# Turn off the monitor if idle
+[ "$dpms" = true ] && setsid -f _lock-display-off $dpms_delay_sec
+
+# lock the screen
+eval "$cmd"
+
+# disable turning off monitor on idle
+killall -q _lock-display-off
+
+# apply key remaps again
+setsid -f remaps-delayed >/dev/null 2>&1
+
+# re-enable autolocking if it was enabled before
+[ "$autolock_state" = on ] && setsid -f autolock

@@ -1,0 +1,16 @@
+#!/bin/sh
+dpms_delay_sec=$1
+mon=on
+offset="$(xprintidle)"
+while true; do
+    rawidle="$(xprintidle)"
+    idle="$(( rawidle - offset ))"
+    if [ "$idle" -ge "$((dpms_delay_sec * 1000))" ] && [ "$mon" = "on" ]; then
+        mon=off
+        offset=0
+        xset dpms force off
+    elif [ "$idle" -lt "$((dpms_delay_sec * 1000))" ] && [ "$mon" = "off" ]; then
+        mon=on
+    fi
+    sleep 10
+done
