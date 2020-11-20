@@ -8,7 +8,7 @@ prefix=""
 suffix=""
 prompt="System Action:"
 
-delimiter="->"
+delimiter="-> "
 
 actions="
  Lock-> lock
@@ -27,11 +27,8 @@ reboot_choices="
 
 prompt_off="Really Poweroff?"
 prompt_reboot_to="Reboot To:"
-prompt_res="Really Reboot?"
+prompt_res="Really Reboot"
 prompt_xorg="Really Kill Xorg?"
-
-lock_cmd=slock
-lock_cmd_alt=slock-alt
 
 # ============================
 #  ======= Functions ========
@@ -41,7 +38,7 @@ lock_cmd_alt=slock-alt
 main()
 {
     case "$1" in
-        reboot | reset | restart) res ;;
+        reboot | reset | restart) shift; res "$@" ;;
         poweroff | shutdown) off ;;
         suspend | sleep) sus ;;
         lock) shift; lock "$@" ;;
@@ -80,7 +77,7 @@ ask()
 
 lock()
 {
-    command lock "$@"
+    command lock "$@" >/dev/null 2>&1
 }
 
 
@@ -100,31 +97,54 @@ res()
 {
     dos=false
 
-    local choice="$(
-        echo "$reboot_choices" | awk NF |
-            awk -F "$delimiter" -v pf="$prefix" -v sf="$suffix" '
-            {print pf $1 sf}' | dmenu -p "$prompt_reboot_to"
-    )"
+    # if no reboot choice given as arg, ask via dmenu.
+    if [ -z "$*" ]; then
+        local choice="$(
+            echo "$reboot_choices" | awk NF |
+                awk -F "$delimiter" -v pf="$prefix" -v sf="$suffix" '
+                {print pf $1 sf}' | dmenu -p "$prompt_reboot_to"
+        )"
+        # Exit if nothing selected in dmenu
+        [ -z "$choice" ] && exit 1
+        # remove prefix and suffix
+        choice=${choice#"$prefix"}
+        choice=${choice%"$suffix"}
+        # get choice's command
+        local choice_cmd="$(
+            echo "$reboot_choices" | awk NF |
+                awk -F "$delimiter" -v ptrn="$choice" '
+                $1==ptrn {for (i=2; i<=NF; i++) print $i; exit}'
+        )"
 
-    # Exit if nothing selected in dmenu
-    [ -z "$choice" ] && exit 1
-
-    # remove prefix and suffix
-    choice=${choice#"$prefix"}
-    choice=${choice%"$suffix"}
-
-    local choice_cmd="$(
-        echo "$reboot_choices" | awk NF |
-            awk -F "$delimiter" -v ptrn="$choice" '
-            $1==ptrn {for (i=2; i<=NF; i++) print $i; exit}'
-    )"
+    else
+        local choice="$1"
+        # get choice's command
+        local choice_cmd="$(
+            echo "$reboot_choices" | awk NF |
+                awk -F "$delimiter" '{print $2}' |
+                awk -F '=' -v ptrn="$choice" '
+                $2==ptrn {print $0; exit}'
+        )"
+        # get choice's name
+        local choice="$(
+            echo "$reboot_choices" | awk NF |
+                awk -F '=' -v ptrn="$choice" '
+                $2==ptrn {print $1; exit}' |
+                awk -F "$delimiter" '{print $1; exit}'
+        )"
+    fi
 
     eval "$choice_cmd"
+
+    case $reboot in
+        artix) prompt_res="${prompt_res}?" ;;
+        *) prompt_res="$prompt_res to ${choice}?" ;;
+    esac
 
     dmenu-prompt "$prompt_res" \
         "
             case $reboot in
-                arch) ;;
+                artix) ;;
                 windows) sudo -A grub-reboot Windows ;;
                 devuan) sudo -A grub-reboot Devuan ;;
                 ubuntu) sudo -A grub-reboot Ubuntu ;;
