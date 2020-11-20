@@ -6,7 +6,7 @@ prompt="Mount What?"
 prefix=""
 suffix=""
 
-delimiter="->"
+delimiter="-> "
 
 actions="
  USB-> mount_usb

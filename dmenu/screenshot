@@ -18,7 +18,7 @@ prefix=""
 suffix=""
 
 # define action names and their commands
-delimiter="->"
+delimiter="-> "
 actions="
 FullScreen-> full
 Select Area-> sele

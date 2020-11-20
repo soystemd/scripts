@@ -8,7 +8,7 @@ prefix=""
 suffix=""
 prompt="Choose printer:"
 
-delimiter="->"
+delimiter="-> "
 
 actions="
 GUI-> guiprnt
