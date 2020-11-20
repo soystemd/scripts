@@ -7,17 +7,24 @@
 #
 # Look at the aliases file to know more: ~/.config/wand/hermione
 
-# Config
+# ==========
+# = Config
+# ==========
+
+# path to config file
 alias_file="$XDG_CONFIG_HOME/wand/hermione"
+
 # your minimal shell
 shell="/bin/sh"
+
 # shell for running interactive (int) commands
 int_shell="$SHELL"
 int_shell_opts="-i -c"
+
 # set the programs
 terminal="$TERMINAL"
 editor="$EDITOR"
-#
+
 
 # Handle options
 opts()
@@ -33,82 +40,47 @@ pattern="$1"
 
 main()
 {
-checkfile
-opts "$@"
-gory
+    checkfile
+    opts "$@"
+    gory
 
-case "$class" in
+    case "$class" in
 
-# TUI (Terminal user interface) program
-    -tui)
-        setsid -f\
-            $shell -c "eval '\
-            \
-            $terminal -e $run \
-            \
-            '"\
-            >/dev/null 2>&1
-        term_transp
-        ;;
-
-
-# Edit a file
-    -edit)
-        setsid -f\
-            $shell -c "eval '\
-            \
-            $terminal -e $editor $run \
-            \
-            '"\
-            >/dev/null 2>&1
-        term_transp
-        ;;
-
-
-# Open terminal in that dir
-    -dir | -cd)
-        setsid -f\
-            $terminal -e $shell -c "\
-            \
-            cd "$run"; exec $int_shell" \
-            \
-            >/dev/null 2>&1
-        term_transp
-        ;;
-
-
-# Interactive commands
-    -cmd | -int)
-        setsid -f\
-            $shell -c "eval '\
-            \
-            $terminal -e $int_shell $int_shell_opts '$run; exec $int_shell' \
-            \
-            '"\
-            >/dev/null 2>&1
-        term_transp
-        ;;
-
-# GUI Programs, Background scripts
+    # GUI Programs, Background scripts
     -gui | -bkgnd)
-        setsid -f\
-            $shell -c "eval '\
-            \
-            $run\
-            \
-            '"\
-            >/dev/null 2>&1
+        setsid -f $shell -c "$run" >/dev/null 2>&1
         ;;
 
-# Foreground
-    -fgnd)
-        $shell -c "eval '\
-            \
-            $run \
-            \
-            '"
+    # TUI (Terminal user interface) program
+    -tui)
+        setsid -f $shell -c "$terminal -e $run" >/dev/null 2>&1
+        term_transp
         ;;
-esac
+
+    # Edit a file
+    -edit)
+        setsid -f $shell -c "$terminal -e $editor $run" >/dev/null 2>&1
+        term_transp
+        ;;
+
+    # Open terminal in that dir
+    -dir | -cd)
+        setsid -f $terminal -e $shell -c "cd $run; exec $int_shell" >/dev/null 2>&1
+        term_transp
+        ;;
+
+    # Interactive commands
+    -cmd | -int)
+        setsid -f $shell -c "
+            $terminal -e $int_shell $int_shell_opts \"$run\"; exec $int_shell
+            " >/dev/null 2>&1
+        term_transp
+        ;;
+
+    # Foreground
+    -fgnd) $shell -c "$run" ;;
+
+    esac
 }
 
 # Reapply terminal transparency to new terminal windows
@@ -118,61 +90,63 @@ term_transp()
     opaque -r "$terminal" >/dev/null 2>&1
 }
 
-##########################
-# Gory background detail #
-##########################
+# =========================
+# = Gory background detail
+# =========================
 
 gory()
 {
-# Remove all comments and empty lines from the config file,
-# and handle backslash line breaks
-alias_list=$(\
-    cat "$alias_file" |
-    awk 'BEGIN{FS=OFS="#"}; {print $1}' | awk NF |
-    sed ':a;N;$!ba;s/\\\n//g')
+    # Remove all comments and empty lines from the config file,
+    # and handle backslash line breaks
+    alias_list=$(
+        cat "$alias_file" |
+        awk 'BEGIN{FS=OFS="#"}; {print $1}' | awk NF | sed ':a;N;$!ba;s/\\\n//g'
+    )
 
-# List all the aliases only, and exit right here, if -l option was passed
-if [ "$list_aliases_and_exit" = "true" ]; then
-    echo "$alias_list" |
-    awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ \
-        {print $0}' | tr ' ' '\n' | awk NF
+    # List all the aliases only, and exit right here, if -l option was passed
+    if [ "$list_aliases_and_exit" = "true" ]; then
+        echo "$alias_list" |
+        awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ \
+            {print $0}' | tr ' ' '\n' | awk NF
+        exit 0
+    fi
+
+    # Find the first matching aliases line
+    matched_aliases=$(
+        echo "$alias_list" |
+        awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ && \
+        $0~/\<'"$pattern"'/ {print $0; exit}'
+    )
+
+    # Get the line above the matching aliases line (which contains the commands)
+    cmd=$(
+        echo "$alias_list" | awk -v ptrn="$matched_aliases" \
+            '$0!~ptrn { line = $0 } \
+            $0~ptrn { print line; exit }'
+    )
+
+    # Seperate command's class from the command itself
+    class=$(echo "$cmd" | awk '{print $1; exit}')
+    run=$(echo "$cmd" | awk '{$1="";sub(/ /,"");print $0; exit}')
+
+    # Output some debugging details and exit right here, if -d option was passed
+    [ "$devel" = "true" ] &&
+    printf "\n\talias list:\n\n${alias_list}\n\n\tmatched_aliases:\n\n\
+    ${matched_aliases}\n\n\tcmd:\n\n${cmd}\n\n\tclass:\n\n\
+    ${class}\n\n\trun:\n\n${run}\n\n" &&
     exit 0
-fi
 
-# Find the first matching aliases line
-matched_aliases=$(\
-    echo "$alias_list" |
-    awk '$1!~/^-tui|^-edit|^-dir|^-cd|^-cmd|^-int|^-gui|^-bkgnd|^-fgnd/ && \
-    $0~/\<'"$pattern"'/ {print $0; exit}')
-
-# Get the line above the matching aliases line (which contains the commands)
-cmd=$(\
-    echo "$alias_list" | awk -v ptrn="$matched_aliases"\
-        '$0!~ptrn { line = $0 }\
-        $0~ptrn { print line; exit }')
-
-# Seperate command's class from the command itself
-class=$(echo "$cmd" | awk '{print $1; exit}')
-run=$(echo "$cmd" | awk '{$1="";sub(/ /,"");print $0; exit}')
-
-# Output some debugging details and exit right here, if -d option was passed
-[ "$devel" = "true" ] &&
-printf "\n\talias list:\n\n${alias_list}\n\n\tmatched_aliases:\n\n\
-${matched_aliases}\n\n\tcmd:\n\n${cmd}\n\n\tclass:\n\n\
-${class}\n\n\trun:\n\n${run}\n\n" &&
-exit 0
-
-# Exit if class or run variable is empty
-if [ -z "$run" ] || [ -z "$class" ]; then
-    notify-send "Wand" "No Match Found."; exit 1
-fi
+    # Exit if class or run variable is empty
+    if [ -z "$run" ] || [ -z "$class" ]; then
+        notify-send "Wand" "No Match Found."; exit 1
+    fi
 }
 
 # Check if config file exists and is readable
 checkfile()
 {
-[ ! -r "$alias_file" ] &&
-    echo "error: $alias_file not found" && exit 1
+    [ ! -r "$alias_file" ] &&
+        echo "error: $alias_file not found" && exit 1
 }
 
 # Run everything
