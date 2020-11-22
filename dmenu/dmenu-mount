@@ -1,13 +1,17 @@
 #!/bin/sh
 # Show some options to launch some mounting scripts with dmenu.
 
-# Config
+# =========
+# = Config
+# =========
+terminal=st
+terminal_alt=st-alt
+#
 prompt="Mount What?"
 prefix=""
 suffix=""
-
 delimiter="-> "
-
+#
 actions="
  USB-> mount_usb
  MTP-> mount_mtp
@@ -53,17 +57,23 @@ ask()
 
 mount_usb()
 {
-    $TERMINAL -e bashmount
+    $terminal_alt -e bashmount &
+    sleep 0.3
+    opaque -r $terminal
 }
 
 mount_mtp()
 {
-    $TERMINAL -e bashmtp
+    $terminal_alt -e bashmtp &
+    sleep 0.3
+    opaque -r $terminal
 }
 
 mount_ftp()
 {
-    $TERMINAL -e bashftp
+    $terminal_alt -e bashftp &
+    sleep 0.3
+    opaque -r $terminal
 }
 
 main "$@"
