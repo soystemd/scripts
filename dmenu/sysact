@@ -21,7 +21,6 @@ actions="
 reboot_choices="
  Artix-> reboot=artix
  Windows-> reboot=windows
- Ubuntu-> reboot=ubuntu
  Devuan-> reboot=devuan
 "
 
