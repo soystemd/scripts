@@ -5,21 +5,19 @@
 
 # Set temp file paths
 currentsinkfile="$(find -P /tmp -maxdepth 1 -name volctl\*)"
-[ -z "$currentsinkfile" ] &&\
+[ -z "$currentsinkfile" ] &&
     { echo "error: volctl temp file not found" ; exit 1; }
 
-currentsink=$(cat "$currentsinkfile")
-
 # Check the current sink device from the temp file and toggle it's value
-if [ "${currentsink}" = "analog-stereo" ]
-then
-# Get the index of sink device
-    speakers="$(pactl list short sinks | awk '/hdmi-stereo/ {print $1}')"
+currentsink=$(cat "$currentsinkfile")
+# Get the index of sink devices
+speakers="$(pactl list short sinks | awk '/hdmi-stereo/ {print $1}')"
+headphones="$(pactl list short sinks | awk '/analog-stereo/ {print $1}')"
+
+if [ "$currentsink" = "analog-stereo" ]; then
     newsinkdevice="$speakers"
     echo "hdmi-stereo" > "$currentsinkfile"
 else
-# Get the index of sink device
-    headphones="$(pactl list short sinks | awk '/analog-stereo/ {print $1}')"
     newsinkdevice="$headphones"
     echo "analog-stereo" > "$currentsinkfile"
 fi
@@ -27,8 +25,17 @@ fi
 # Select the new device as default
 pactl set-default-sink "$newsinkdevice"
 
+# Set keyboard sound effect's output to speakers
+buckle=$(vol-getbuckleindex)
+[ -n "$buckle" ] &&
+    pactl move-sink-input "$buckle" "$speakers" ||
+    buckle=notrunning
+
 # Change default device of all running audio streams
 pactl list short sink-inputs | while read -r stream; do
     streamid=$(echo "$stream" | awk '{print $1}')
-    pactl move-sink-input "$streamid" "$newsinkdevice"
+    [ "$streamid" != "$buckle" ] &&
+        pactl move-sink-input "$streamid" "$newsinkdevice"
 done
+
+exit 0
