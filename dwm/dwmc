@@ -1,21 +1,15 @@
 #!/bin/sh
 # You can control dwm with this script.
 
-# Layouts:
-#
-# 1 -> grid
-# 2 -> dwindle
-# 3 -> deck
-# 4 -> centered-master
-# 5 -> monocle
-# 6 -> floating
-
 # Config
 layout_list="
 grid
+tile
 dwindle
+spiral
 deck
 cmaster
+cfmaster
 monocle
 float
 "
@@ -28,30 +22,37 @@ case "$1" in
         shift;
         case "$1" in
             grid)    set_layout 1; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL ;;
-            dwindle) set_layout 2; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
-            deck)    set_layout 3; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
-            cmaster) set_layout 4; [ "$2" != "--no-extra" ] && opaque -2 $TERMINAL && dwmc setmfact 1.9 ;;
-            monocle) set_layout 5; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
-            float)   set_layout 6; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL ;;
+            tile)    set_layout 2; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
+            dwindle) set_layout 3; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
+            spiral)  set_layout 4; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
+            deck)    set_layout 5; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
+            cmaster) set_layout 6; [ "$2" != "--no-extra" ] && opaque -2 $TERMINAL && dwmc resmfact ;;
+            cfmaster)set_layout 7; [ "$2" != "--no-extra" ] && opaque -2 $TERMINAL && dwmc setmfact 1.9 ;;
+            monocle) set_layout 8; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
+            float)   set_layout 9; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
             *) exit 1 ;;
         esac
         exit
     ;;
 
     view|toggleview|tag|toggletag) dwm-msg run_command "$1" $(getbin "$2") ;;
-    toggleviewright) dwmc toggleview "$(echo "$(get_current_tag)+1" | bc)" ;;
+    toggleviewmaster | switchcol) dwm-msg run_command switchcol ;;
+    addviewright) dwmc toggleview "$(echo "$(get_current_tag)+1" | bc)" ;;
     viewall) dwm-msg run_command view 511 ;;
     tagall) dwm-msg run_command tag 511 ;;
 
     next) dwm-msg run_command focusstack 1 ;;
     prev) dwm-msg run_command focusstack -1 ;;
 
-    incmfact) dwm-msg run_command setmfact 0.025 ;;
-    decmfact) dwm-msg run_command setmfact "-0.025" ;;
+    incmfact) dwm-msg run_command setmfact   0.025  ;;
+    decmfact) dwm-msg run_command setmfact '-0.025' ;;
     resmfact) dwm-msg run_command setmfact 1.5 ;;
 
-    incgaps) dwm-msg run_command setgaps 5 ;;
-    decgaps) dwm-msg run_command setgaps "-5" ;;
+    incnmaster) dwm-msg run_command incnmaster   1  ;;
+    decnmaster) dwm-msg run_command incnmaster '-1' ;;
+
+    incgaps) dwm-msg run_command setgaps   5  ;;
+    decgaps) dwm-msg run_command setgaps '-5' ;;
 
     getcurrtag) get_current_tag ;;
     getlayoutname) get_current_layout_name ;;
