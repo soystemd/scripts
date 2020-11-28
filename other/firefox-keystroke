@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+    exit
+fi
+
+activeid=$(xdotool getactivewindow)
+ffid=$(xdotool search --class firefox | grep $activeid)
+
+case $1 in
+    nt | next-tab                )  key=ctrl+Page_Down  ;;
+    pt | prev-tab | previous-tab )  key=ctrl+Page_Up    ;;
+    ct | close-tab               )  key=ctrl+w          ;;
+esac
+
+if [ -n "$ffid" ]; then
+    xdotool key --window $ffid $key
+    exit
+fi
+
+xdotool key --window $activeid $2
