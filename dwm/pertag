@@ -16,23 +16,14 @@ jq --unbuffered '.tag_change_event.monitor_number' |
 while IFS=$'\n' read; do
 
     case "$(dwmc getlayoutname)" in
-        grid)
+        grid | dwindle | tile | deck | spiral | cmaster)
             transp
             ;;
-        dwindle)
-            transp
-            ;;
-        deck)
-            transp
-            ;;
-        cmaster)
+        cfmaster)
             semitransp
             ;;
-        monocle)
+        monocle | float)
             notransp
-            ;;
-        float)
-            semitransp
             ;;
         *)
             continue
