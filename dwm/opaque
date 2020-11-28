@@ -81,7 +81,7 @@ reapply_transparency_all_windows() {
 
 ######
 set_raw_opacity_all_windows() {
-    local window_id_list="$(\
+    local window_id_list="$(
         xdotool search --class "$window_class")"
 
     local opacity="$1"
@@ -89,7 +89,7 @@ set_raw_opacity_all_windows() {
     while IFS= read -r window_id
     do
         echo "$window_id"
-        xprop -id "$window_id" -format _NET_WM_WINDOW_OPACITY 32x\
+        xprop -id "$window_id" -format _NET_WM_WINDOW_OPACITY 32x \
             -set _NET_WM_WINDOW_OPACITY "$opacity"
 
     done <<< "$window_id_list"
@@ -111,9 +111,9 @@ opaque_cleanup() {
 
 exit_if_not_initialized() {
     run_action=0
-    [ -z "$(get_status_file_path)" ] &&\
-        run_action=1 &&\
-    [ "$1" = "no-print-error" ] &&\
+    [ -z "$(get_status_file_path)" ] &&
+        run_action=1 &&
+    [ "$1" = "no-print-error" ] &&
         exit 0
     [ "$run_action" = "1" ] && error "not initialized"
 }
@@ -134,8 +134,8 @@ remove_previous_status_files() {
 }
 
 get_status_file_path() {
-    local status_file="$(\
-        find -P "$tmpdir" -maxdepth 1 -name opaque-${USER}-${window_class}\*)" ||\
+    local status_file="$(
+        find -P "$tmpdir" -maxdepth 1 -name opaque-${USER}-${window_class}\*)" ||
         error "get_status_file_path failed"
     echo "$status_file"
 }
