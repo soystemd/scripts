@@ -5,36 +5,42 @@
 # Configuration
 ##############################################################################
 #
-# Bar update interval
+# Bar update interval (in seconds)
 interval=8
 #
 # The delimiter character(s) between widgets
 # The escape sequences \x01 through \x06 represent colors
-delimiter="\x05 ][ \x06"
+#delimiter="\x05 ][ \x06"
+delimiter="\x05  \x06"
 #
-# The half-delimiter at the end of the bar
-enddelimiter="\x05 ]"
+# The delimiter at the end of the bar
+#enddelimiter="\x05 ]"
+enddelimiter=""
 #
 # Whatever you want to show up at the beginning of the bar
 bar_prefix=" "
 #
+gp="\x05"; gs="\x06"
 # Glyphs/Emojis
-glyph_headphone=""
-glyph_keyboard=""
-glyph_speaker=""
-glyph_memory=""
-glyph_geoip=""
+glyph_headphone="${gp}${gs}"
+ glyph_keyboard="${gp}${gs}"
+  glyph_speaker="${gp}${gs}"
+   glyph_memory="${gp}${gs}"
+    glyph_geoip="${gp}${gs}"
+    glyph_break="${gp}${gs}"
+     glyph_temp="${gp}${gs}"
+     glyph_time="${gp}${gs}"
+     glyph_play="${gp}${gs}"
+    glyph_hot_1="${gp}${gs}"
+    glyph_hot_2="${gp}${gs}"
+    glyph_hot_3="${gp}${gs}"
+   glyph_cool_1="${gp}${gs}"
+   glyph_cool_2="${gp}${gs}"
 glyph_geoip_tor=""
-glyph_break=""
-glyph_temp=""
-glyph_time=""
-glyph_play=""
 #
 # Position of widgets
 widpos_timedate="\
     1"
-#widpos_break="\
-#    2"
 widpos_kblayout="\
     2"
 widpos_audio="\
@@ -115,7 +121,7 @@ refresh_widgets_set3() {
 # Widget that shows time and date.
 widget_timedate() {
 
-    echo "$(date -Im | \
+    echo "$(date -Im |
         awk -v glyph="$glyph_time" 'BEGIN{FS=OFS="+"} \
         {gsub(/T/, " x ", $1); print glyph " " $1}')"
 }
@@ -140,8 +146,7 @@ widget_audio() {
 
     # Check if mpd is playing music
     playing=" $glyph_play"
-    [ -z "$(mpc | awk '/\[playing\]/')" ] &&\
-        playing=""
+    [ -z "$(mpc | awk '/\[playing\]/')" ] && playing=""
 
     echo "${sinkicon} "; echo "$(vol-getcurrentvolumeandmute)${playing}"
 }
@@ -149,21 +154,21 @@ widget_audio() {
 # Widget that shows memory usage.
 widget_mem() {
 
-    load=$(top -bn1 | grep "Cpu(s)" | \
-           sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | \
-           awk '{print 100 - $1}'|\
+    load=$(top -bn1 | grep "Cpu(s)" |
+           sed "s/.*, *\([0-9.]*\)%* id.*/\1/" |
+           awk '{print 100 - $1}'|
            awk 'BEGIN{FS="."}{print $1}')
 
 # Show glyphs based on cpu load percentage  
     verbal=$(case 1 in
-    $(($load>= 90 )))echo "";;
-    $(($load>= 70 )))echo ""   ;;
-    $(($load>= 50 )))echo "" ;;
-    $(($load>= 30 )))echo ""    ;;
-                   *)echo ""   ;;
+    $(($load>= 90 )))echo "$glyph_hot_3"  ;;
+    $(($load>= 70 )))echo "$glyph_hot_2"  ;;
+    $(($load>= 50 )))echo "$glyph_hot_1"  ;;
+    $(($load>= 30 )))echo "$glyph_cool_2" ;;
+                   *)echo "$glyph_cool_1" ;;
     esac)
 
-    echo "$(free -h | \
+    echo "$(free -h |
         awk -v glyph="$glyph_memory"\
         -v verb="$verbal"\
         '/^Mem:/ {print glyph" "$3" "verb}')"
@@ -171,14 +176,14 @@ widget_mem() {
 
 # Widget that shows CPU temp.
 widget_cpu() {
-    local cpu="$(sensors | \
+    local cpu="$(sensors |
         awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')"
     echo "${cpu::-4}°C"
 }
 
 widget_break() {
     local time_left_till_nextbreak=$(cat /tmp/eagle-${USER})
-    [ "$time_left_till_nextbreak" = "pause" ] &&\
+    [ "$time_left_till_nextbreak" = "pause" ] &&
         time_left_till_nextbreak=""
     echo "$glyph_break $time_left_till_nextbreak"
 }
@@ -186,10 +191,10 @@ widget_break() {
 # Widget that shows your location based on your public ip.
 widget_geoip() {
 
-    local ip_direct=$(\
+    local ip_direct=$(
         curl -s --retry 1 ifconfig.me || echo "")
 
-    local ip_tor=$(\
+    local ip_tor=$(
         curl -x socks5://127.0.0.1:9050 -s --retry 1 ifconfig.me || echo "")
 
     if [ "$ip_direct" = "" ] && [ "$ip_tor" = "" ]; then
@@ -198,7 +203,7 @@ widget_geoip() {
         geoip_direct=$(geoiplookup "$ip_direct")
         geoip_tor=$(geoiplookup "$ip_tor")
 
-        geoip_direct="$(echo "$geoip_direct" | \
+        geoip_direct="$(echo "$geoip_direct" |
             awk \
                 -v glyph="$glyph_geoip"\
                 'BEGIN { FS=OFS="," }\
@@ -208,11 +213,11 @@ widget_geoip() {
         [ -n "$glyph_geoip_tor" ] &&\
             glyph_geoip_tor="${glyph_geoip_tor} "
 
-        geoip_tor="$(echo "$geoip_tor" | \
+        geoip_tor="$(echo "$geoip_tor" |
             awk \
                 -v glyph="$glyph_geoip_tor"\
                 'BEGIN { FS=OFS=", " }\
-                /^GeoIP/ {print glyph tolower($2)}' |\
+                /^GeoIP/ {print glyph tolower($2)}' |
                 tr -d 'eioa')"
 # 
         netspeed=$(netspeed --compact enp3s0)
