@@ -38,4 +38,8 @@ case "$1" in
         show_hidden
         rm -f "$file"
         ;;
+    *)
+        echo "give arg"
+        exit 1
+        ;;
 esac
