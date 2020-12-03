@@ -1,13 +1,15 @@
 #!/bin/sh
-ranger_choosefile=/tmp/nvimranger-choosefile
+
+ranger_choosefiles=/tmp/nvimranger-choosefiles
 nvimranger_infofile=/tmp/nvimranger
+
 editor_file_fullpath="$(awk 'BEGIN{RS="^$";FS=OFS="\n"}{print $1; exit}' $nvimranger_infofile)"
 nvim_socket="$(awk 'BEGIN{RS="^$";FS=OFS="\n"}{print $2; exit}' $nvimranger_infofile)"
+
 while true; do
-    rm -f $ranger_choosefile
-    ranger --selectfile="$editor_file_fullpath" --choosefile=$ranger_choosefile
-    [ ! -r "$ranger_choosefile" ] && exit 1
-    chosenfile="$(cat $ranger_choosefile)"
-    nvr --servername $nvim_socket --remote "$chosenfile"
+    rm -f $ranger_choosefiles
+    ranger --selectfile="$editor_file_fullpath" --choosefiles=$ranger_choosefiles
+    [ ! -r "$ranger_choosefiles" ] && exit 1
+    cat $ranger_choosefiles | xargs nvr --servername $nvim_socket --remote
     editor_file_fullpath="$chosenfile"
 done
