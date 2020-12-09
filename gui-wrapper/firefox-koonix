@@ -4,9 +4,23 @@
 set -E
 trap '[ "$?" -ne 77 ] || exit 77' ERR
 
-pgrep -f 'gather firefox' &&
-    (xdotool search --class firefox | grep -q $(xdotool getactivewindow) ||
-    (dwmc view 5; exit 77))
+ff() {
+    find /run/user/1000 -name 'firefox*' | wc -l | grep -v -q '0' &&
+        setsid -f $BROWSER && vrs || notify-send firefoxwtf
+}
 
-find /run/user/1000 -name 'firefox*' | wc -l | grep -v -q '0' &&
-    setsid -f $BROWSER && vrs || notify-send firefoxwtf
+pgrep -f 'gather firefox' &&
+(
+    dwmc view 5
+    sleep 0.2
+    xdotool search --class firefox | grep -q $(xdotool getactivewindow) || ff
+    exit 77
+)
+
+ff; exit 0
+
+# ways to detect if the current selected window is a firefox window:
+# 1.
+#   xdotool search --class firefox | grep -q $(xdotool getactivewindow) ||
+# 2.
+#   xdotool getactivewindow | xargs xprop -id | grep -q '"firefox"' ||
