@@ -1,12 +1,12 @@
 #!/bin/sh
 
-transp(){
+transp () {
     opaque -0 $TERMINAL >/dev/null 2>&1
 }
-semitransp(){
+semitransp () {
     opaque -2 $TERMINAL >/dev/null 2>&1
 }
-notransp(){
+notransp () {
     opaque -1 $TERMINAL >/dev/null 2>&1
 }
 
