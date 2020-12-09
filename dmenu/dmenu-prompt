@@ -5,6 +5,7 @@
 # `./prompt "Do you want to shutdown?" shutdown -h now`
 
 [ "$(printf "No\\nYes" |
-    dmenu -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ] || exit 0
+    dmenu -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ] || exit 1
 shift
-sh -c " eval \"$@\" "
+[ -n "$*" ] && /bin/sh -c "$@"
+exit 0
