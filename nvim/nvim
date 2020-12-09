@@ -3,15 +3,25 @@
 # the terminal to the same color as vim's (using an ANSI escape sequence),
 # and restoring it to however it was after exiting vim.
 
-# Config
+# =========
+# = Config
+# =========
+
 #bg_gruvbox="#262626" # medium gruvbox
 bg_gruvbox="#1d2021" # hard gruvbox
+bg_gruvbox_material="$bg_gruvbox"
+
 bg_onedark="#282c34"
+bg_one_monokai="$bg_onedark"
+
 bg_falcon="#020221"
+
+# =========
+# =========
 
 default_bg="$TERM_BGCOLOR"
 cfg="$XDG_CONFIG_HOME/nvim/init.vim"
-color=$(awk '/^colorscheme\>\s/ {print $2; exit}' $cfg)
+color=$(awk '/^colorscheme\>\s/ {print $2; exit}' $cfg | tr '-' '_')
 eval "nvim_bg=\$bg_${color}"
 
 # Set terminal's background to the given hex color.
