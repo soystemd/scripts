@@ -1,4 +1,5 @@
 #!/bin/sh
+
 # test files and args
 file="/tmp/supercp-${USER}"
 last="/tmp/supercp-last-${USER}"
