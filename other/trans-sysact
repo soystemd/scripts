@@ -7,23 +7,23 @@ interval_seconds=20
 ncycles=3
 
 # delay after all downloads complete and before suspending the system
-delay_minutes=30
+delay_minutes=180
 
 trans()
 {
     transmission-remote 127.0.0.1 -l 2>&1
 }
 
-[ -n "$(trans | grep "Couldn't connect")" ]
-    && echo cannot connect to transmission. && exit 1
+[ -n "$(trans | grep "Couldn't connect")" ] &&
+    echo cannot connect to transmission. && exit 1
 
-firstline_charcount=$(trans | awk '{print;exit}' | wc --chars)
-lastcolumn_charcount=$(trans | awk '{print $9;exit}' | wc --chars)
-range=$((firstline_charcount - lastcolumn_charcount))
-stats="$(trans | cut -c 1-${range})"
 
 no_torrent_left()
 {
+    firstline_charcount=$( trans | awk '{print;exit}'    | wc --chars)
+    lastcolumn_charcount=$(trans | awk '{print $9;exit}' | wc --chars)
+    range=$((firstline_charcount - lastcolumn_charcount))
+    stats="$(trans | cut -c 1-${range})"
     [ -z "$(echo "$stats" |
         grep -v -e " 100% " -e "Done" -e " Stopped " -e "^Sum")" ] &&
         echo true && return
