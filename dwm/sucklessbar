@@ -10,12 +10,13 @@ interval=8
 #
 # The delimiter character(s) between widgets
 # The escape sequences \x01 through \x06 represent colors
-#delimiter="\x05 ][ \x06"
-delimiter="\x05  \x06"
+delimiter="\x05 ][ \x06"
+#delimiter="\x05 | \x06"
+#delimiter="\x05  \x06"
 #
 # The delimiter at the end of the bar
-#enddelimiter="\x05 ]"
-enddelimiter=""
+enddelimiter="\x05 ]"
+#enddelimiter="\x05"
 #
 # Whatever you want to show up at the beginning of the bar
 bar_prefix=" "
@@ -24,13 +25,13 @@ gp="\x05"; gs="\x06"
 # Glyphs/Emojis
 glyph_headphone="${gp}${gs}"
  glyph_keyboard="${gp}${gs}"
-  glyph_speaker="${gp}${gs}"
+  glyph_speaker="${gs}${gs}"
    glyph_memory="${gp}${gs}"
     glyph_geoip="${gp}${gs}"
     glyph_break="${gp}${gs}"
      glyph_temp="${gp}${gs}"
      glyph_time="${gp}${gs}"
-     glyph_play="${gp}${gs}"
+     glyph_play=""
     glyph_hot_1="${gp}${gs}"
     glyph_hot_2="${gp}${gs}"
     glyph_hot_3="${gp}${gs}"
@@ -49,6 +50,9 @@ widpos_geoip="\
     4"
 widpos_mem="\
     5"
+#
+# Net test domain (stuff like ifconfig.me, icanhazip.com, ipecho.net/plain, ifconfig.co, ...)
+ip_site="checkip.amazonaws.com"
 #
 ##############################################################################
 # End of Configuration
@@ -192,10 +196,10 @@ widget_break() {
 widget_geoip() {
 
     local ip_direct=$(
-        curl -s --retry 1 ifconfig.me || echo "")
+        curl --silent --retry 1 "$ip_site" || echo "")
 
     local ip_tor=$(
-        curl -x socks5://127.0.0.1:9050 -s --retry 1 ifconfig.me || echo "")
+        curl --proxy socks5://127.0.0.1:9050 --silent --retry 1 "$ip_site" || echo "")
 
     if [ "$ip_direct" = "" ] && [ "$ip_tor" = "" ]; then
         echo "$ip_direct"
