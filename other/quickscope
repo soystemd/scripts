@@ -1,0 +1,74 @@
+#!/bin/bash
+# This is the preview script used by lf's file previewer
+
+# Script arguments
+height=20
+
+# Args
+echo_mime=none
+echo_name=none
+while true; do
+    case "$1" in
+        --mime) echo_mime=small;       shift ;;
+        --bigmime) echo_mime=big;      shift ;;
+        --cybermime) echo_mime=cyber;  shift ;;
+        --name) echo_name=small;       shift ;;
+        --bigname) echo_name=big;      shift ;;
+        --cybername) echo_name=cyber;  shift ;;
+        --) shift; break ;;
+        *) break ;;
+    esac
+done
+path="$1"
+height="$2"
+[ -z "$path" ] && echo give path && exit 1
+
+# Config
+highlight_max_size=262143  # 256KiB
+highlight_tabwidth=4
+highlight_style='pablo'
+
+cache="$XDG_RUNTIME_DIR/fzfscope/cache"
+thumbnail="$cache/thumbnail"
+pdfimg="$cache/pdfimg"
+mkdir -p "$cache"
+
+mime="$(file --dereference --brief --mime-type -- "$path")"
+
+case "$echo_mime" in
+        small) echo "$mime" ;;
+        big)   echo "$mime" | figlet -f "ANSI Shadow" ;;
+        cyber) echo "$mime" | figlet -f cybermedium   ;;
+esac
+case "$echo_name" in
+        small) basename "$path"; echo ;;
+        big)   basename "$path" | figlet -f "ANSI Shadow" ;;
+        cyber) basename "$path" | figlet -f cybermedium   ;;
+esac
+
+case "$mime" in
+    inode/directory ) unbuffer lsd -Fa1 --group-dirs first --icon always "$path" ;;
+	text/html       ) w3m -dump "$path" ;;
+	text/troff      ) man ./ "$path" | col -b ;;
+	application/zip ) atool --list -- "$path" ;;
+    image/*         ) chafa --size 80x"$height" "$path" ;;
+    *opendocument*  ) odt2txt "$path" ;;
+    video/*         ) ffmpegthumbnailer -i "$path" -o "$thumbnail" -s 0;
+                      chafa --size 80x"$height" "$thumbnail" ;;
+
+    audio/* | application/octet-stream ) mediainfo "$path" ;;
+
+    */pdf           )
+        pdftxt="$(pdftotext -l 10 -nopgbrk -q -- "$path" -)"
+        [ "$(echo "$pdftxt" | wc -c)" -gt 1 ] && echo "$pdftxt" && exit 0
+        pdftoppm -jpeg -singlefile "$path" "$pdfimg"
+        chafa --size 80x"$height" "${pdfimg}.jpg" ;;
+
+	text/*  | */xml )
+        [ "$(stat --printf='%s' -- "$path")" -gt "$highlight_max_size" ] && cat "$path" && exit 0
+        [ "$(tput colors)" -ge 256 ] && highlight_format='xterm256' || highlight_format='ansi'
+        highlight --replace-tabs="$highlight_tabwidth" --out-format="$highlight_format" \
+            --style="$highlight_style" --force -- "$path"
+        ;;
+esac
+exit 0
