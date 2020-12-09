@@ -19,7 +19,7 @@ fi
 # use good ol' cp if --fallback flag is given
 if [ "$fallback" = "true" ]; then
     echo "using cp..."
-    cp -ri -- "$@"
+    cp -riv -- "$@"
     exit 0
 fi
 

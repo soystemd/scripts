@@ -25,7 +25,7 @@ fi
 fallback()
 {
     echo "using mv..."
-    mv -i -- "$@"
+    mv -iv -- "$@"
     exit 0
 }
 [ "$fallback" = "true" ] && fallback "$@"
