@@ -24,6 +24,7 @@ int_shell_opts="-i -c"
 # set the programs
 terminal="$TERMINAL"
 editor="$EDITOR"
+file_manager="$RANGER"
 
 
 # Handle options
@@ -47,40 +48,25 @@ main()
     case "$class" in
 
     # GUI Programs, Background scripts
-    -gui | -bkgnd)
-        setsid -f $shell -c "$run" >/dev/null 2>&1
-        ;;
+    -gui | -bkgnd) setsid -f $shell -c "$run" >/dev/null 2>&1 ;;
 
-    # TUI (Terminal user interface) program
-    -tui)
-        setsid -f $shell -c "$terminal -e $run" >/dev/null 2>&1
-        term_transp
-        ;;
+    # TUI programs
+    -tui) setsid -f $shell -c "$terminal -e $run" >/dev/null 2>&1 ;;
 
     # Edit a file
-    -edit)
-        setsid -f $shell -c "$terminal -e $editor $run" >/dev/null 2>&1
-        term_transp
-        ;;
+    -edit) setsid -f $shell -c "$terminal -e $editor $run" >/dev/null 2>&1 ;;
 
-    # Open terminal in that dir
-    -dir | -cd)
-        setsid -f $terminal -e $shell -c "cd $run; exec $int_shell" >/dev/null 2>&1
-        term_transp
-        ;;
+    # Open filemanager in specified dir
+    -dir | -cd) setsid -f $terminal -e $shell -c "cd $run; $file_manager; exec $int_shell" >/dev/null 2>&1 ;;
 
     # Interactive commands
-    -cmd | -int)
-        setsid -f $shell -c "
-            $terminal -e $int_shell $int_shell_opts \"$run\"; exec $int_shell
-            " >/dev/null 2>&1
-        term_transp
-        ;;
+    -cmd | -int) setsid -f $shell -c "$terminal -e $int_shell $int_shell_opts \"$run\"; exec $int_shell" >/dev/null 2>&1 ;;
 
-    # Foreground
+    # Foreground commands
     -fgnd) $shell -c "$run" ;;
 
     esac
+    term_transp
 }
 
 # Reapply terminal transparency to new terminal windows
@@ -138,7 +124,7 @@ gory()
 
     # Exit if class or run variable is empty
     if [ -z "$run" ] || [ -z "$class" ]; then
-        notify-send "Wand" "No Match Found."; exit 1
+        notify-send --expire-time=1500 "Wand" "No Match Found."; exit 1
     fi
 }
 
