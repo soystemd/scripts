@@ -2,5 +2,5 @@
 # Get a path and open a terminal in that path.
 
 cd "$1"
-setsid -f $TERMINAL -e /bin/sh -c 'ranger; exec $SHELL' > /dev/null 2>&1
+setsid -f $TERMINAL -e /bin/sh -c '$RANGER; exec $SHELL' > /dev/null 2>&1
 exit 0
