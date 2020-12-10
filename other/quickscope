@@ -28,7 +28,7 @@ highlight_max_size=262143  # 256KiB
 highlight_tabwidth=4
 highlight_style='pablo'
 
-cache="$XDG_RUNTIME_DIR/fzfscope/cache"
+cache="$XDG_RUNTIME_DIR/quickscope/cache"
 thumbnail="$cache/thumbnail"
 pdfimg="$cache/pdfimg"
 mkdir -p "$cache"
