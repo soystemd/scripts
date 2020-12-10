@@ -4,7 +4,7 @@
 dir_icon=
 file_icon=
 prompt="Choose File/Directory: "
-height_with_preview=99
+height_with_preview=100
 height_no_preview=55
 preview_window_height=55
 
@@ -43,7 +43,7 @@ fzf_opts='
 fzf_preview_opts='
 --height="'"$height_with_preview"'%"
 --preview="'"$fzf_preview"'"
---preview-window="down:'"$preview_window_height"'%:rounded"
+--preview-window="down:'"$preview_window_height"'%:rounded:hidden"
 '
 fzf_multi_opt='
 --multi
