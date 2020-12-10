@@ -1,28 +1,26 @@
 #!/bin/bash
 # This script be responsible for my statusbar.
 
-##############################################################################
-# Configuration
-##############################################################################
-#
+# =====================
+# = Config
+# =====================
+
 # Bar update interval (in seconds)
 interval=8
-#
-# The delimiter character(s) between widgets
+
+# The delimiter character(s) between widgets (ex. ][, |, )
 # The escape sequences \x01 through \x06 represent colors
+# \x05 is gray, \x06 is white(ish).
 delimiter="\x05 ][ \x06"
-#delimiter="\x05 | \x06"
-#delimiter="\x05  \x06"
-#
+
 # The delimiter at the end of the bar
 enddelimiter="\x05 ]"
-#enddelimiter="\x05"
-#
+
 # Whatever you want to show up at the beginning of the bar
 bar_prefix=" "
-#
-gp="\x05"; gs="\x06"
+
 # Glyphs/Emojis
+gp="\x05"; gs="\x06"
 glyph_headphone="${gp}${gs}"
  glyph_keyboard="${gp}${gs}"
   glyph_speaker="${gs}${gs}"
@@ -38,7 +36,7 @@ glyph_headphone="${gp}${gs}"
    glyph_cool_1="${gp}${gs}"
    glyph_cool_2="${gp}${gs}"
 glyph_geoip_tor=""
-#
+
 # Position of widgets
 widpos_timedate="\
     1"
@@ -50,95 +48,36 @@ widpos_geoip="\
     4"
 widpos_mem="\
     5"
-#
-# Net test domain (stuff like ifconfig.me, icanhazip.com, ipecho.net/plain, ifconfig.co, ...)
+
+# Internet Connectivity / IP Address domain
+# stuff like ifconfig.me, icanhazip.com, ipecho.net/plain, ifconfig.co, ...
 ip_site="checkip.amazonaws.com"
-#
-##############################################################################
-# End of Configuration
-##############################################################################
 
-# Main function
-main() {
-    case "$1" in
-        -h | --help) echo "statusbar script for suckless's dwm"; exit 0 ;;
-    esac
-    # Refresh the statusbar
-    while true ; do
-        refresh_bar_all
-        sleep "$interval" &
-        wait
-    done
-}
+# =====================
+# = End of Config
+# =====================
 
-#############
-# FUNCTIONS #
-#############
+# =====================
+# = Widgets
+# =====================
 
-######
-# Construct the statusbar
-refresh_widgets_all() {
-
-    # All the widgets
-    refresh_widgets_set1
-
-    # Volume and keyboard-layout widgets
-    refresh_widgets_set2
-
-    # Geoip widget
-    refresh_widgets_set3
-}
-
-# Construct the statusbar while updating only some of the widgets
-refresh_widgets_set1() {
-
-    # Time and date widget
-    WIDGET[$widpos_timedate]=$(widget_timedate)
-
-    # Memory usage widget
-    WIDGET[$widpos_mem]=$(widget_mem)
-}
-
-# Construct the statusbar while updating only some of the widgets
-refresh_widgets_set2() {
-
-    # Keyboard layout widget
-    WIDGET[$widpos_kblayout]=$(widget_kb_layout)
-
-    # Audio widget
-    WIDGET[$widpos_audio]=$(widget_audio)
-
-    # Time left till next eagle break
-#    WIDGET[$widpos_break]=$(widget_break)
-}
-
-# Construct the statusbar while updating only some of the widgets
-refresh_widgets_set3() {
-
-    # Geoip widget
-    WIDGET[$widpos_geoip]=$(widget_geoip)
-}
-######
-
-
-######
 # Widget that shows time and date.
-widget_timedate() {
-
+widget_timedate ()
+{
     echo "$(date -Im |
         awk -v glyph="$glyph_time" 'BEGIN{FS=OFS="+"} \
         {gsub(/T/, " x ", $1); print glyph " " $1}')"
 }
 
 # Widget that shows the current keyboard layout.
-widget_kb_layout() {
-
+widget_kb_layout ()
+{
     echo "$glyph_keyboard"; echo "$(xkblayout-state print " %s")"; echo
 }
 
 # Widget that shows some audio related stuff.
-widget_audio() {
-
+widget_audio ()
+{
     # Check if audio is playing through headphones or speakers
     currentsink=$(vol-getcurrentsinkname)
     if [[ $currentsink = analog-stereo ]]
@@ -156,8 +95,8 @@ widget_audio() {
 }
 
 # Widget that shows memory usage.
-widget_mem() {
-
+widget_mem ()
+{
     load=$(top -bn1 | grep "Cpu(s)" |
            sed "s/.*, *\([0-9.]*\)%* id.*/\1/" |
            awk '{print 100 - $1}'|
@@ -179,13 +118,15 @@ widget_mem() {
 }
 
 # Widget that shows CPU temp.
-widget_cpu() {
+widget_cpu ()
+{
     local cpu="$(sensors |
         awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')"
     echo "${cpu::-4}°C"
 }
 
-widget_break() {
+widget_break ()
+{
     local time_left_till_nextbreak=$(cat /tmp/eagle-${USER})
     [ "$time_left_till_nextbreak" = "pause" ] &&
         time_left_till_nextbreak=""
@@ -193,8 +134,8 @@ widget_break() {
 }
 
 # Widget that shows your location based on your public ip.
-widget_geoip() {
-
+widget_geoip ()
+{
     local ip_direct=$(
         curl --silent --retry 1 "$ip_site" || echo "")
 
@@ -223,7 +164,7 @@ widget_geoip() {
                 'BEGIN { FS=OFS=", " }\
                 /^GeoIP/ {print glyph tolower($2)}' |
                 tr -d 'eioa')"
-# 
+
         netspeed=$(netspeed --compact enp3s0)
         [ -n "$netspeed" ] && netspeed=" $netspeed"
 
@@ -235,15 +176,29 @@ widget_geoip() {
     fi
 
 }
-######
 
+# =====================
+# = End of Widgets
+# =====================
 
+# Main function
+main ()
+{
+    case "$1" in
+        -h | --help) echo "statusbar script for suckless's dwm"; exit 0 ;;
+    esac
+    # Refresh the statusbar
+    while true ; do
+        refresh_bar_all
+        sleep "$interval" &
+        wait
+    done
+}
 
-
-######
 # Now for the dirty background detail:
 # Refresh and write the constructed statusbar
-refresh_bar_all() {
+refresh_bar_all ()
+{
     refresh_widgets_all
     build_bar
     write_bar
@@ -252,7 +207,8 @@ refresh_bar_all() {
     mem_last_output="${WIDGET[$widpos_mem]}"
 }
 
-refresh_bar_set1() {
+refresh_bar_set1 ()
+{
     refresh_widgets_set1
     build_bar
     write_bar
@@ -270,7 +226,8 @@ refresh_bar_set2() {
 }
 
 # Refresh and write the constructed statusbar (but only refresh set2)
-refresh_bar_set3() {
+refresh_bar_set3 ()
+{
     refresh_widgets_set3
     build_bar
     write_bar
@@ -279,7 +236,8 @@ refresh_bar_set3() {
 }
 
 # Stick all the widgets together into a line
-build_bar() {
+build_bar ()
+{
     local widget_count="${#WIDGET[@]}"
     statusbar=$(for ((i = "$widget_count"; i > 0; i--))
     do
@@ -291,11 +249,54 @@ build_bar() {
 }
 
 # Write the bar to dwm via xsetroot
-write_bar() {
+write_bar ()
+{
     xsetroot -name "$(echo -e "$statusbar" | tr -d '\n')" &
     wait
 }
-######
+
+# Construct the statusbar
+refresh_widgets_all ()
+{
+    # All the widgets
+    refresh_widgets_set1
+
+    # Volume and keyboard-layout widgets
+    refresh_widgets_set2
+
+    # Geoip widget
+    refresh_widgets_set3
+}
+
+# Construct the statusbar while updating only some of the widgets
+refresh_widgets_set1 ()
+{
+    # Time and date widget
+    WIDGET[$widpos_timedate]=$(widget_timedate)
+
+    # Memory usage widget
+    WIDGET[$widpos_mem]=$(widget_mem)
+}
+
+# Construct the statusbar while updating only some of the widgets
+refresh_widgets_set2 ()
+{
+    # Keyboard layout widget
+    WIDGET[$widpos_kblayout]=$(widget_kb_layout)
+
+    # Audio widget
+    WIDGET[$widpos_audio]=$(widget_audio)
+
+    # Time left till next eagle break
+#    WIDGET[$widpos_break]=$(widget_break)
+}
+
+# Construct the statusbar while updating only some of the widgets
+refresh_widgets_set3 ()
+{
+    # Geoip widget
+    WIDGET[$widpos_geoip]=$(widget_geoip)
+}
 
 # Trap for updating the statusbar at will
 trap 'refresh_bar_set2' SIGTRAP
