@@ -1,0 +1,5 @@
+#!/bin/sh
+# Get a file or directory via hotfuzz and open it in ranger.
+if [ -n "$*" ]; then file="$(hotfuzz --preview -- "$@")"
+else                 file="$(hotfuzz --preview)"; fi
+[ -n "$file" ] && ranger --selectfile="$file"; exit 0
