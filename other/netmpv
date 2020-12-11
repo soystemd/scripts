@@ -1,0 +1,10 @@
+#!/bin/sh
+
+case "$1" in
+	*youtube.com/watch*|*youtube.com/playlist*|*youtu.be*|*hooktube.com*|*bitchute.com*)
+        ytdl-mpv "$1"
+        ;;
+    *)
+        mpv --keep-open=yes "$1"
+        ;;
+esac
