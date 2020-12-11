@@ -1,0 +1,35 @@
+#!/bin/sh
+
+set -E
+trap '[ "$?" -ne 77 ] || exit 0' ERR
+
+dir="$XDG_RUNTIME_DIR/netsxiv/cache"
+cachetable="${dir}/netsxiv-cachetable"
+mkdir -p "$dir"
+touch "$cachetable"
+
+[ "$1" = "--gif" ] && is_gif=true && shift
+url="$1"
+cached_img_name=$(awk '$1=="'"$url"'" {print $2}' "$cachetable")
+cached_img="${dir}/${cached_img_name}"
+a2cfile="${cached_img}.aria2"
+[ -r "$a2cfile" ] && ( notify-send "this file's download is already in progress"; exit 77 )
+
+dl ()
+{
+    name="$(mktemp --dry-run img-XXXXXX)"
+    if [ "$is_gif" = true ]; then name="$(mktemp --dry-run img-XXXXXX.gif)"; fi
+    file="${dir}/${name}"
+    echo "$url $name" >> "$cachetable" || notify-send "writing cachetable failed"
+    aria2c --quiet --dir="$dir" --out="$name" "$url" ||
+        aria2c  --quiet --all-proxy="127.0.0.1:8123" --dir="$dir" --out="$name" "$url" ||
+        ( notify-send "aria2c failed"; exit 77 )
+    sxiv-mpv "$file" || notify-send "sxiv-mpv failed"
+}
+
+if [ -n "$cached_img_name" ]; then
+    sxiv-mpv "$cached_img" || dl
+else
+    dl
+fi
+exit 0
