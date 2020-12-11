@@ -7,12 +7,12 @@ xcaperc="$XDG_CONFIG_HOME/xcape/xcaperc"
 setxkbmap -model pc105 -layout us,ir
 
 # Remap one of my mouse's side buttons to middle click
-xmodmap "$xmodmaprc"
+xmodmap "$xmodmaprc" >/dev/null 2>&1 || echo xmodmap error
 
 # Left super acts as escape if pressed and released
 # (Capslock is mapped to left super via skr)
 killall xcape 2>/dev/null
-xcape -e "$(cat "$xcaperc" | awk -F# '{print $1}' | awk NF | tr -d '\n')"
+xcape -e "$(cat "$xcaperc" | awk -F# '{print $1}' | awk NF | perl -pe 'chomp if eof' | tr '\n' ';')"
 
 # Advanced: Set key repeat rate
 xset r rate 200 60
