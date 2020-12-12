@@ -8,13 +8,13 @@ height_with_preview=100
 height_no_preview=55
 preview_window_height=55
 
-# Defaults
+# Default values
 defaultpath="."
 mindepth=1
 maxdepth=6
 output_full_path=true
 
-# Parse opts and args
+# Parse opts and args using gnu getopt
 opts=$(
     getopt --shell sh --unquoted \
     \
@@ -24,30 +24,36 @@ opts=$(
     --name hotfuzz -- "$@"
     )
 
+# Exit if getopt didn't succeed
 [ "$?" != 0 ] && echo "terminating..." >&2 && exit 1
 eval set -- "$opts"
 
+# fzf options
+fzf_opts="
+--prompt=\"${prompt}\"
+--layout=reverse --height=${height_no_preview}%
+--bind ctrl-d:half-page-down,ctrl-u:half-page-up,ctrl-g:top,ctrl-p:toggle-preview
+"
+
 # Commands to remove icons and extra stuff from filename
-trim_filename_cmd="tr -d "${dir_icon}${file_icon}" | cut -c2-"
+trim_icons_from_filename_cmd="tr -d "${dir_icon}${file_icon}" | cut -c2-"
 
-# fzf preview command
-fzf_preview="echo "{}" | $trim_filename_cmd | \
-    xargs -I{x} quickscope --cybermime --name {x} 20"
+# fzf preview command (which is used in fzf_preview_opts)
+fzf_preview="
+echo {} | $trim_icons_from_filename_cmd | \
+xargs -I{x} quickscope --cybermime --name {x} 20"
 
-# fzf Options
-fzf_opts='
---prompt="'"$prompt"'"
---layout=reverse --height="'"$height_no_preview"'%"
---bind "ctrl-d:half-page-down,ctrl-u:half-page-up,ctrl-g:top,ctrl-p:toggle-preview"
-'
-fzf_preview_opts='
---height="'"$height_with_preview"'%"
---preview="'"$fzf_preview"'"
---preview-window="down:'"$preview_window_height"'%:rounded:hidden"
-'
-fzf_multi_opt='
+# preview-related fzf options
+fzf_preview_opts="
+--height=${height_with_preview}%
+--preview=\"${fzf_preview}\"
+--preview-window=down:${preview_window_height}%:rounded:hidden
+"
+
+# multiselect option
+fzf_multi_opt="
 --multi
-'
+"
 
 # Handle opts
 while true; do
@@ -57,7 +63,7 @@ while true; do
         -d | --mindepth ) mindepth="$2";     shift 2 ;;
         -m | --multi    ) fzf_opts="$fzf_opts $fzf_multi_opt";    shift ;;
         -p | --preview  ) fzf_opts="$fzf_opts $fzf_preview_opts"; shift ;;
-        -f | --no-fullpath ) full_path=false; shift ;;
+        -f | --no-fullpath ) output_full_path=false; shift ;;
         -P | --path     ) findpath="${findpath}${2}
 ";                        shift 2 ;;
         -- ) shift; break ;;
@@ -65,13 +71,12 @@ while true; do
     esac
 done
 
-# Handle paths that are passed without args
+# Handle paths that are passed as positional arguments
 if [ -n "$*" ]; then
     findpath=""
     while [ -n "$1" ]; do
         findpath="${findpath}${1}
-"
-        shift
+";      shift
     done
 else
     findpath="$defaultpath"
@@ -84,23 +89,32 @@ echo -E "$findpath" | awk NF | while IFS= read -r path; do
         exit 1
 done
 
-# Test if maxdepth is an integer and is in range
-case "$maxdepth" in
-    ''|*[!0-9]*)
-        echo -e "hotfuzz: maxdepth is not an integer\nterminating..." >&2 &&
-        exit 1 ;;
-    *)
-        if [ "$maxdepth" -gt 30 ] || [ "$maxdepth" -lt 1 ]; then
-            echo -e "hotfuzz: maxdepth is too big\nterminating..." >&2 &&
-            exit 1
-        fi ;;
-esac
+for depth in "$mindepth" "$maxdepth"; do
+
+    # Test if depths are an integer
+    case "$depth" in
+        ''|*[!0-9]*)
+            echo -e "hotfuzz: given depth is not an integer\nterminating..." >&2
+            exit 1 ;;
+    esac
+
+    # Test if depths are in range
+    [ "$depth" -lt 1 ] &&
+        echo -e "hotfuzz: given depth is out of range\nterminating..." >&2 &&
+        exit 1
+done
+
+# Test if mindepth is greater than maxdepth
+[ "$mindepth" -gt "$maxdepth" ] &&
+    echo -e "hotfuzz: mindepth is bigger than maxdepth\nterminating..." >&2 &&
+    exit 1
 
 # Test if search is from current working directory
 [ "$findpath" = "." ] && cwd=true
 
 # The find function
-findfn() {
+findfn ()
+{
     local path="$1"
     local depth="$2"
     local type="$3" #type can be d (for directory) or f (for file)
@@ -114,17 +128,17 @@ findfn() {
         2>/dev/null | cut "$cutarg" | awk -v icon="$icon" '{print icon" "$0}'
 }
 
-# fzf Options
-FZF_DEFAULT_OPTS="$fzf_opts"
-
 if [ "$output_full_path" = true ] &&
-   [ "$(echo "$findpath" | wc -l )" == 1 ] &&
+   [ "$(echo "$findpath" | wc -l )" = 1 ] &&
    [ "$(echo "$findpath" | cut -c1)" != "/" ]
 then
-    full_path_cmd="awk -v pwd=$PWD '{print pwd \"/\" \$0}'"
+    convert_filename_to_fullpath_cmd="awk -v pwd=$PWD '{print pwd \"/\" \$0}'"
 else
-    full_path_cmd="cat"
+    convert_filename_to_fullpath_cmd="cat"
 fi
+
+# this variable is read by fzf
+export FZF_DEFAULT_OPTS="$fzf_opts"
 
 # Loop through depths from shallow to deep
 for (( depth = $mindepth; depth <= $maxdepth; depth++ )); do
@@ -132,4 +146,4 @@ for (( depth = $mindepth; depth <= $maxdepth; depth++ )); do
         findfn "$path" "$depth" f
         findfn "$path" "$depth" d
     done
-done | fzf | eval "$trim_filename_cmd" | eval "$full_path_cmd"
+done | fzf | eval "$trim_icons_from_filename_cmd" | eval "$convert_filename_to_fullpath_cmd"
