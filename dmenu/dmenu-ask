@@ -1,4 +1,5 @@
 #!/bin/bash
-# This script is the SUDO_ASKPASS variable, meaning that it will be used as a
-# password prompt if needed.
-dmenu -p "$1" <&- && echo
+# Get some text from user via dmenu
+text="$(dmenu -p "$1")"
+[ -z "$text" ] && exit 1
+echo "$text"
