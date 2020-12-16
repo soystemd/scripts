@@ -1,5 +1,25 @@
 #!/bin/sh
 # Get a file or directory via hotfuzz and open it in ranger.
-if [ -n "$*" ]; then file="$(hotfuzz --preview -- "$@")"
-else                 file="$(hotfuzz --preview)"; fi
-[ -n "$file" ] && ranger --selectfile="$file"; exit 0
+
+rangercd=false
+lastdirfile=
+
+if [ "$1" = --cd ]; then
+    rangercd=true
+    lastdirfile="$2"
+    [ -z "$lastdirfile" ] && echo "rangerfuzz: --cd requires argument" >&2 && exit 1
+    shift 2
+fi
+
+if [ -n "$*" ]; then fuzzyfile="$(hotfuzz --preview -- "$@")"
+else                 fuzzyfile="$(hotfuzz --preview)"; fi
+[ -z "$fuzzyfile" ] && exit 0
+
+if [ "$rangercd" = false ]; then
+    ranger --cachedir="$RANGER_CACHEDIR" --selectfile="$fuzzyfile"
+    exit 0
+fi
+
+ranger --cachedir="$RANGER_CACHEDIR" \
+       --choosedir="$lastdirfile"    \
+       --selectfile="$fuzzyfile"
