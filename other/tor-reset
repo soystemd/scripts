@@ -1,5 +1,5 @@
 #!/bin/sh
 # Run tor-reset-backend as root.
 
-sudo -A killall tor-reset-backend
+sudo -A killall -q tor-reset-backend
 sudo -A tor-reset-backend "$*"
