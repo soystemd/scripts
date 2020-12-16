@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Config
 dir_icon=
@@ -141,9 +141,16 @@ fi
 export FZF_DEFAULT_OPTS="$fzf_opts"
 
 # Loop through depths from shallow to deep
-for (( depth = $mindepth; depth <= $maxdepth; depth++ )); do
-    echo -E "$findpath" | awk NF | while IFS= read -r path; do
-        findfn "$path" "$depth" f
-        findfn "$path" "$depth" d
-    done
-done | fzf | eval "$trim_icons_from_filename_cmd" | eval "$convert_filename_to_fullpath_cmd"
+(
+    for (( depth = $mindepth; depth <= $maxdepth; depth++ )); do
+        echo -E "$findpath" | awk NF | while IFS= read -r path; do
+            findfn "$path" "$depth" f
+            findfn "$path" "$depth" d
+        done
+    done |
+        fzf |
+        eval "$trim_icons_from_filename_cmd" |
+        eval "$convert_filename_to_fullpath_cmd" &
+) | cat
+
+exit 0
