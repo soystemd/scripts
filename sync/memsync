@@ -1,0 +1,29 @@
+#!/bin/sh
+
+for var in "$name" "$target_dir" "$volatile_dir" "$perm"; do
+    [ -z "$var" ] && echo "variable empty" >&2 && exit 1
+done
+
+target_dir_name="$(basename "$target_dir")"
+volatile="${volatile_dir}/${name}-${target_dir_name}-${USER}"
+
+[ ! -r "$volatile" ] && mkdir -p -m${perm} "$volatile"
+
+link="$target_dir_name"
+static="${target_dir_name}.static"
+
+cd "$(dirname "$target_dir")"
+
+if [ "$(readlink $link)" != "$volatile" ]; then
+    mv "$target_dir_name" "$static"
+    ln -s "$volatile" "$link"
+fi
+
+if [ -e "$link/.unpacked" ]; then
+    rsync -av --delete --exclude .unpacked "./$link/" "./$static/"
+else
+    rsync -av "./$static/" "./$link/"
+    touch "$link/.unpacked"
+fi
+
+echo "finished syncing $name."

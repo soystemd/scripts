@@ -1,5 +1,0 @@
-#!/bin/sh
-export USER=koonix
-bin="/home/$USER/.local/bin/sync/_cclssync"
-cd "/home/$USER/.cache/ccls-cache-log"
-"$bin" ccls
