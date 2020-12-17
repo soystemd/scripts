@@ -4,6 +4,7 @@
 # Config
 layout_list="
 grid
+nrowgrid
 tile
 dwindle
 spiral
@@ -21,15 +22,16 @@ case "$1" in
   layout)
     shift;
     case "$1" in
-      grid)    set_layout 1; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL ;;
-      tile)    set_layout 2; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
-      dwindle) set_layout 3; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
-      spiral)  set_layout 4; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
-      deck)    set_layout 5; [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
-      cmaster) set_layout 6; [ "$2" != "--no-extra" ] && opaque -2 $TERMINAL && dwmc resmfact ;;
-      cfmaster)set_layout 7; [ "$2" != "--no-extra" ] && opaque -2 $TERMINAL && dwmc setmfact 1.9 ;;
-      monocle) set_layout 8; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
-      float)   set_layout 9; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
+      grid)     set_layout 1;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL ;;
+      nrowgrid) set_layout 2;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resnmaster;;
+      tile)     set_layout 3;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
+      dwindle)  set_layout 4;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
+      spiral)   set_layout 5;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
+      deck)     set_layout 6;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
+      cmaster)  set_layout 7;  [ "$2" != "--no-extra" ] && opaque -2 $TERMINAL && dwmc resmfact ;;
+      cfmaster) set_layout 8;  [ "$2" != "--no-extra" ] && opaque -2 $TERMINAL && dwmc setmfact 1.9 ;;
+      monocle)  set_layout 9;  [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
+      float)    set_layout 10; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
       *) exit 1 ;;
     esac
     exit
@@ -47,9 +49,12 @@ case "$1" in
   incmfact) dwm-msg run_command setmfact   0.025  ;;
   decmfact) dwm-msg run_command setmfact '-0.025' ;;
   resmfact) dwm-msg run_command setmfact 1.5 ;;
+  setmfact) dwm-msg run_command setmfact "$(echo "$2+1" | bc)" ;;
 
   incnmaster) dwm-msg run_command incnmaster   1  ;;
   decnmaster) dwm-msg run_command incnmaster '-1' ;;
+  resnmaster) for i in {1..9}; do dwmc decnmaster; done ;;
+  setnmaster | setrow) dwm-msg run_command incnmaster "$2"; dwmc decnmaster ;;
 
   incgaps) dwm-msg run_command setgaps   5  ;;
   decgaps) dwm-msg run_command setgaps '-5' ;;
