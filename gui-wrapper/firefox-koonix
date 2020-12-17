@@ -5,7 +5,7 @@ set -E
 trap '[ "$?" -ne 77 ] || exit 77' ERR
 
 ff() {
-    find /run/user/1000 -name 'firefox*' | wc -l | grep -v -q '0' &&
+    find /mnt/zramfs/sync -name 'firefox*' | wc -l | grep -v -q '0' &&
         setsid -f $BROWSER && vrs || notify-send firefoxwtf
 }
 
