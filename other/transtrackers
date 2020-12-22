@@ -1,5 +1,9 @@
 #!/bin/sh
-# add more trackers to transmission torrents
+
+# add more trackers to transmission torrents using transmission-trackers,
+# but first check if transmission is running and that we are connected
+# to the internet.
+
 1>/dev/null pgrep transmission &&
-    wget -q --spider http://ifconfig.me &&
+    wget --quiet --spider checkip.amazonaws.com &&
     /usr/bin/env python /usr/bin/transmission-trackers
