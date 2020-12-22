@@ -13,9 +13,9 @@ suffix=""
 delimiter="-> "
 #
 actions="
- USB-> mount_usb
- MTP-> mount_mtp
-ﴓ FTP-> mount_ftp
+ Flash-> mount_usb
+ Phone MTP-> mount_mtp
+ﴓ Phone WIFI-> mount_ftp
 "
 
 main()
