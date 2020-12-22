@@ -21,20 +21,24 @@ bar_prefix=" "
 
 # Glyphs/Emojis
 gp="\x05"; gs="\x06"
-glyph_headphone="${gp}${gs}"
+glyph_headphone="${gs}${gs}"
  glyph_keyboard="${gp}${gs}"
   glyph_speaker="${gs}${gs}"
-   glyph_memory="${gp}${gs}"
     glyph_geoip="${gp}${gs}"
     glyph_break="${gp}${gs}"
      glyph_temp="${gp}${gs}"
      glyph_time="${gp}${gs}"
      glyph_play=""
-    glyph_hot_1="${gp}${gs}"
-    glyph_hot_2="${gp}${gs}"
-    glyph_hot_3="${gp}${gs}"
-   glyph_cool_1="${gp}${gs}"
-   glyph_cool_2="${gp}${gs}"
+    glyph_hot_1="${gs}${gs}"
+    glyph_hot_2="${gs}${gs}"
+    glyph_hot_3="${gs}${gs}"
+   glyph_cool_1="${gs}${gs}"
+   glyph_cool_2="${gs}${gs}"
+   glyph_memory_1="${gp}${gs}"
+   glyph_memory_2="${gp}${gs}"
+   glyph_memory_3="${gp}${gs}"
+   glyph_memory_4="${gp}${gs}"
+   glyph_memory_5="${gp}${gs}"
 glyph_geoip_tor=""
 
 # Position of widgets
@@ -103,7 +107,7 @@ widget_mem ()
            awk 'BEGIN{FS="."}{print $1}')
 
 # Show glyphs based on cpu load percentage  
-    verbal=$(case 1 in
+    load_verbal=$(case 1 in
     $(($load>= 90 )))echo "$glyph_hot_3"  ;;
     $(($load>= 70 )))echo "$glyph_hot_2"  ;;
     $(($load>= 50 )))echo "$glyph_hot_1"  ;;
@@ -111,9 +115,22 @@ widget_mem ()
                    *)echo "$glyph_cool_1" ;;
     esac)
 
+    # mem=$(free -h | awk '/^Mem:/ {print $3}')
+    # mem=${mem:0:-2}
+
+    # mem_verbal=$(case 1 in
+    # $(($mem>= 3000 )))echo "$glyph_memory_5" ;;
+    # $(($mem>= 2500 )))echo "$glyph_memory_4" ;;
+    # $(($mem>= 1500 )))echo "$glyph_memory_3" ;;
+    # $(($mem>= 700  )))echo "$glyph_memory_2" ;;
+    #                 *)echo "$glyph_memory_1" ;;
+    # esac)
+
+    # echo "$load_verbal $mem_verbal"
+
     echo "$(free -h |
-        awk -v glyph="$glyph_memory"\
-        -v verb="$verbal"\
+        awk -v glyph="$glyph_memory_1"\
+        -v verb="$load_verbal"\
         '/^Mem:/ {print glyph" "$3" "verb}')"
 }
 
