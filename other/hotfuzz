@@ -14,6 +14,9 @@ mindepth=1
 maxdepth=6
 output_full_path=true
 
+# Save the args for later use
+args="$@"
+
 # Parse opts and args using gnu getopt
 opts=$(
     getopt --shell sh --unquoted \
@@ -26,22 +29,31 @@ opts=$(
 
 # Exit if getopt didn't succeed
 [ "$?" != 0 ] && echo "terminating..." >&2 && exit 1
+
+# Set script's args to the new args processed by gnu getopt
 eval set -- "$opts"
+
+# Commands to remove icons and extra stuff from filename
+trim_icons_from_filename_cmd="tr -d "${dir_icon}${file_icon}" | cut -c2-"
+
+run_trimmed_file_via_program="\
+echo {} | $trim_icons_from_filename_cmd | xargs -I{x}"
+
+# fzf preview command (which is used in fzf_preview_opts)
+fzf_preview="\
+$run_trimmed_file_via_program quickscope --cybermime --name -- {x} 20"
+
+fzf_open="\
+$run_trimmed_file_via_program $TERMINAL -e rifle -- {x}"
 
 # fzf options
 fzf_opts="
 --prompt=\"${prompt}\"
 --layout=reverse --height=${height_no_preview}%
---bind ctrl-d:half-page-down,ctrl-u:half-page-up,ctrl-g:top,ctrl-p:toggle-preview
+--bind 'ctrl-d:half-page-down,ctrl-u:half-page-up,\
+ctrl-g:top,ctrl-p:toggle-preview,\
+ctrl-o:execute(${fzf_open})'
 "
-
-# Commands to remove icons and extra stuff from filename
-trim_icons_from_filename_cmd="tr -d "${dir_icon}${file_icon}" | cut -c2-"
-
-# fzf preview command (which is used in fzf_preview_opts)
-fzf_preview="
-echo {} | $trim_icons_from_filename_cmd | \
-xargs -I{x} quickscope --cybermime --name {x} 20"
 
 # preview-related fzf options
 fzf_preview_opts="
@@ -55,17 +67,21 @@ fzf_multi_opt="
 --multi
 "
 
+#ctrl-e:execute-silent(${fzf_edit})
+#fzf_edit="$run_trimmed_file_via_program $TERMINAL -e $EDITOR -- {x}"
+
+
 # Handle opts
 while true; do
     case "$1" in
         -h | --help     ) echo "fuzzy file finder"; exit 0 ;;
-        -D | --maxdepth ) maxdepth="$2";     shift 2 ;;
-        -d | --mindepth ) mindepth="$2";     shift 2 ;;
-        -m | --multi    ) fzf_opts="$fzf_opts $fzf_multi_opt";    shift ;;
-        -p | --preview  ) fzf_opts="$fzf_opts $fzf_preview_opts"; shift ;;
-        -f | --no-fullpath ) output_full_path=false; shift ;;
+        -D | --maxdepth ) maxdepth="$2";                          shift 2 ;;
+        -d | --mindepth ) mindepth="$2";                          shift 2 ;;
+        -m | --multi    ) fzf_opts="$fzf_opts $fzf_multi_opt";    shift   ;;
+        -p | --preview  ) fzf_opts="$fzf_opts $fzf_preview_opts"; shift   ;;
+        -f | --no-fullpath ) output_full_path=false;              shift   ;;
         -P | --path     ) findpath="${findpath}${2}
-";                        shift 2 ;;
+";                                                                shift 2 ;;
         -- ) shift; break ;;
         *  ) break        ;;
     esac
