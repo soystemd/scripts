@@ -6,8 +6,8 @@ MUTE_INDICATOR=""
 
 CURRENTSINK=$(vol-getcurrentsinkname)
 
-VOLUME=$(pactl list sinks | awk -v pattern="$CURRENTSINK" '$2~pattern {nr[NR+7]}; NR in nr {print $5}')
-ISMUTED=$(pactl list sinks | awk -v pattern="$CURRENTSINK" '$2~pattern {nr[NR+6]}; NR in nr {print $2}')
+VOLUME=$( pactl list sinks | grep -v snd_aloop | awk -v pattern="$CURRENTSINK" '$2~pattern {nr[NR+7]}; NR in nr {print $5}')
+ISMUTED=$(pactl list sinks | grep -v snd_aloop | awk -v pattern="$CURRENTSINK" '$2~pattern {nr[NR+6]}; NR in nr {print $2}')
 
 if [ "$ISMUTED" = "yes" ]
 then

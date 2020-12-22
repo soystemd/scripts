@@ -2,4 +2,4 @@
 # Get the volume percentage of the currently active audio output device.
 
 CURRENTSINK=$(vol-getcurrentsinkname)
-pactl list sinks | awk -v pattern="$CURRENTSINK" '$2~pattern {nr[NR+7]}; NR in nr {print $5}'
+pactl list sinks | grep -v snd_aloop | awk -v pattern="$CURRENTSINK" '$2~pattern {nr[NR+7]}; NR in nr {print $5}'
