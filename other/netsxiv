@@ -21,8 +21,8 @@ dl ()
     if [ "$is_gif" = true ]; then name="$(mktemp --dry-run img-XXXXXX.gif)"; fi
     file="${dir}/${name}"
     echo "$url $name" >> "$cachetable" || notify-send "writing cachetable failed"
-    aria2c --quiet --dir="$dir" --out="$name" "$url" ||
-        aria2c  --quiet --all-proxy="127.0.0.1:8123" --dir="$dir" --out="$name" "$url" ||
+    aria2c --no-conf --quiet --dir="$dir" --out="$name" "$url" ||
+        aria2c --no-conf --quiet --all-proxy="127.0.0.1:8123" --dir="$dir" --out="$name" "$url" ||
         ( notify-send "aria2c failed"; exit 77 )
     sxiv-mpv "$file" || notify-send "sxiv-mpv failed"
 }
