@@ -23,12 +23,12 @@ case "$1" in
     shift;
     case "$1" in
       grid)     set_layout 1;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL ;;
-      nrowgrid) set_layout 2;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resnmaster;;
+      nrowgrid) set_layout 2;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL ;;
       tile)     set_layout 3;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
       dwindle)  set_layout 4;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
       spiral)   set_layout 5;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
       deck)     set_layout 6;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
-      cmaster)  set_layout 7;  [ "$2" != "--no-extra" ] && opaque -2 $TERMINAL && dwmc resmfact ;;
+      cmaster)  set_layout 7;  [ "$2" != "--no-extra" ] && opaque -0 $TERMINAL && dwmc resmfact ;;
       cfmaster) set_layout 8;  [ "$2" != "--no-extra" ] && opaque -2 $TERMINAL && dwmc setmfact 1.9 ;;
       monocle)  set_layout 9;  [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
       float)    set_layout 10; [ "$2" != "--no-extra" ] && opaque -1 $TERMINAL ;;
