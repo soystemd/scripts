@@ -34,24 +34,19 @@ glyph_headphone="${gs}${gs}"
     glyph_hot_3="${gs}${gs}"
    glyph_cool_1="${gs}${gs}"
    glyph_cool_2="${gs}${gs}"
-   glyph_memory_1="${gp}${gs}"
-   glyph_memory_2="${gp}${gs}"
-   glyph_memory_3="${gp}${gs}"
-   glyph_memory_4="${gp}${gs}"
-   glyph_memory_5="${gp}${gs}"
+ glyph_memory_1="${gp}${gs}"
+ glyph_memory_2="${gp}${gs}"
+ glyph_memory_3="${gp}${gs}"
+ glyph_memory_4="${gp}${gs}"
+ glyph_memory_5="${gp}${gs}"
 glyph_geoip_tor=""
 
 # Position of widgets
-widpos_timedate="\
-    1"
-widpos_kblayout="\
-    2"
-widpos_audio="\
-    3"
-widpos_geoip="\
-    4"
-widpos_mem="\
-    5"
+widpos_timedate=1
+widpos_kblayout=2
+widpos_audio=3
+widpos_geoip=4
+widpos_mem=5
 
 # Internet Connectivity / IP Address domain
 # stuff like ifconfig.me, icanhazip.com, ipecho.net/plain, ifconfig.co, ...
@@ -84,16 +79,13 @@ widget_audio ()
 {
     # Check if audio is playing through headphones or speakers
     currentsink=$(vol-getcurrentsinkname)
-    if [[ $currentsink = analog-stereo ]]
-    then
-        sinkicon="$glyph_headphone"
-    else
+    [[ $currentsink = analog-stereo ]] &&
+        sinkicon="$glyph_headphone" ||
         sinkicon="$glyph_speaker"
-    fi
 
     # Check if mpd is playing music
     playing=" $glyph_play"
-    [ -z "$(mpc | awk '/\[playing\]/')" ] && playing=""
+    [[ -z $(mpc | awk '/\[playing\]/') ]] && playing=""
 
     echo "${sinkicon} "; echo "$(vol-getcurrentvolumeandmute)${playing}"
 }
@@ -145,7 +137,7 @@ widget_cpu ()
 widget_break ()
 {
     local time_left_till_nextbreak=$(cat /tmp/eagle-${USER})
-    [ "$time_left_till_nextbreak" = "pause" ] &&
+    [[ $time_left_till_nextbreak = pause ]] &&
         time_left_till_nextbreak=""
     echo "$glyph_break $time_left_till_nextbreak"
 }
@@ -154,16 +146,19 @@ widget_break ()
 widget_geoip ()
 {
     local ip_direct=$(
-        curl --silent --retry 1 "$ip_site" || echo "")
+        curl --silent --connect-timeout 2 --max-time 3 \
+             "$ip_site" || echo " ")
 
     local ip_tor=$(
-        curl --proxy socks5://127.0.0.1:9050 --silent --retry 1 "$ip_site" || echo "")
+        curl --silent --proxy socks5://127.0.0.1:9050 \
+             --retry 1 --connect-timeout 2 --max-time 3 \
+             "$ip_site" || echo "")
 
-    if [ "$ip_direct" = "" ] && [ "$ip_tor" = "" ]; then
-        echo "$ip_direct"
+    if [[ $ip_direct = " " ]] && [[ $ip_tor = "" ]]; then
+        echo "${gs}${ip_direct}${gs}"
     else
-        geoip_direct=$(geoiplookup "$ip_direct")
-        geoip_tor=$(geoiplookup "$ip_tor")
+        geoip_direct=$(geoiplookup "$ip_direct" )
+        geoip_tor=$(   geoiplookup "$ip_tor"    )
 
         geoip_direct="$(echo "$geoip_direct" |
             awk \
@@ -172,8 +167,7 @@ widget_geoip ()
                 /^GeoIP/ {gsub(/Iran/, "ir", $2);\
                 print glyph tolower($2) " "}')"
 
-        [ -n "$glyph_geoip_tor" ] &&\
-            glyph_geoip_tor="${glyph_geoip_tor} "
+        [[ -n $glyph_geoip_tor ]] && glyph_geoip_tor="${glyph_geoip_tor} "
 
         geoip_tor="$(echo "$geoip_tor" |
             awk \
@@ -183,10 +177,10 @@ widget_geoip ()
                 tr -d 'eioa')"
 
         netspeed=$(netspeed --compact enp3s0)
-        [ -n "$netspeed" ] && netspeed=" $netspeed"
+        [[ -n $netspeed ]] && netspeed=" $netspeed"
 
-        [ "$ip_direct" = "" ] && geoip_direct="$ip_direct"
-        [ "$ip_tor" = "" ] && geoip_tor="$ip_tor"
+        [[ $ip_direct = "" ]] && geoip_direct="$ip_direct"
+        [[ $ip_tor = "" ]]    && geoip_tor="$ip_tor"
         echo "$geoip_direct"
         echo "$geoip_tor"
         echo "$netspeed"
@@ -219,7 +213,7 @@ refresh_bar_all ()
     refresh_widgets_all
     build_bar
     write_bar
-    # Save these widget's output to use them in refresh_widgets_set2
+    # Save these widget's output to use them in refresh_widgets_set*
     geoip_last_output="${WIDGET[$widpos_geoip]}"
     mem_last_output="${WIDGET[$widpos_mem]}"
 }
@@ -229,20 +223,30 @@ refresh_bar_set1 ()
     refresh_widgets_set1
     build_bar
     write_bar
-    # Save these widget's output to use them in refresh_widgets_set2
+    # Save this widget's output to use them in refresh_widgets_set*
     mem_last_output="${WIDGET[$widpos_mem]}"
 }
 
 # Refresh and write the constructed statusbar (but only refresh set2)
-refresh_bar_set2() {
+refresh_bar_set2 ()
+{
     refresh_widgets_set2
+
     WIDGET[$widpos_geoip]="$geoip_last_output"
+
+    [[ $(echo "${WIDGET[$widpos_geoip]}" | wc -m) -lt 3 ]] &&
+        WIDGET[$widpos_geoip]="${gp}${gp}${gp}"
+
     WIDGET[$widpos_mem]="$mem_last_output"
+
+    [[ $(echo "${WIDGET[$widpos_mem]}"   | wc -m) -lt 3 ]] &&
+        WIDGET[$widpos_mem]="${gp}${gp}${gp}"
+
     build_bar
     write_bar
 }
 
-# Refresh and write the constructed statusbar (but only refresh set2)
+# Refresh and write the constructed statusbar (but only refresh set3)
 refresh_bar_set3 ()
 {
     refresh_widgets_set3
