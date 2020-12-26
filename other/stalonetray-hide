@@ -21,14 +21,6 @@ show_hidden()
 
 case "$1" in
 
-    init)
-        show_hidden
-        dwmc view 5
-        setsid -f firefox
-        sleep 2.5
-        hide_current
-        ;;
-
     on)
         show_hidden
         hide_current
