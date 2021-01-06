@@ -43,8 +43,11 @@ echo {} | $trim_icons_from_filename_cmd | xargs -I{x}"
 fzf_preview="\
 $run_trimmed_file_via_program quickscope --cybermime --name -- {x} 20"
 
+# fzf_open="\
+# $run_trimmed_file_via_program $TERMINAL -e rifle -- {x}"
+
 fzf_open="\
-$run_trimmed_file_via_program $TERMINAL -e rifle -- {x}"
+$run_trimmed_file_via_program hotfuzz-open {x}"
 
 # fzf options
 fzf_opts="
@@ -52,7 +55,7 @@ fzf_opts="
 --layout=reverse --height=${height_no_preview}%
 --bind 'ctrl-d:half-page-down,ctrl-u:half-page-up,\
 ctrl-g:top,ctrl-p:toggle-preview,\
-ctrl-o:execute(${fzf_open})'
+ctrl-o:execute-silent(${fzf_open})'
 "
 
 # preview-related fzf options
