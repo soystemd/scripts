@@ -1,0 +1,3 @@
+#!/bin/sh
+[ -d "$1" ] && cd "$1" && setsid -f $TERMINAL && exit 0
+rifle -l "$1" | head -n1 | grep -q ask && setsid -f $TERMINAL -e $EDITOR -- "$1" || setsid -f $TERMINAL -e rifle -- "$1"
