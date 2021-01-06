@@ -165,7 +165,7 @@ widget_geoip ()
                 -v glyph="$glyph_geoip"\
                 'BEGIN { FS=OFS="," }\
                 /^GeoIP/ {gsub(/Iran/, "ir", $2);\
-                print glyph tolower($2) " "}')"
+                print glyph tolower($2) " "; exit}')"
 
         [[ -n $glyph_geoip_tor ]] && glyph_geoip_tor="${glyph_geoip_tor} "
 
