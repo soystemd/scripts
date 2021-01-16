@@ -38,6 +38,7 @@ main() {
         -t) toggle_transparency_all_windows ;;
         -r) reapply_transparency_all_windows ;;
         -i) opaque_init ;;
+        -I) opaque_cleanup; opaque_init ;;
         -c) opaque_cleanup ;;
         *) print_help_and_exit 0 ;;
     esac
