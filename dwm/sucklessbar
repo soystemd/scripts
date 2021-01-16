@@ -6,7 +6,7 @@
 # =====================
 
 # Bar update interval (in seconds)
-interval=8
+interval=10
 
 # The delimiter character(s) between widgets (ex. ][, |, )
 # The escape sequences \x01 through \x06 represent colors
@@ -145,17 +145,27 @@ widget_break ()
 # Widget that shows your location based on your public ip.
 widget_geoip ()
 {
-    local ip_direct=$(
-        curl --silent --connect-timeout 2 --max-time 3 \
-             "$ip_site" || echo " ")
+    # make fifo files
+    pipedir="$XDG_RUNTIME_DIR/sucklessbar"; pipe="$pipedir/pipo"; mkdir -p "$pipedir"
+    pipe_direct="$pipedir/pipe_direct";     pipe_tor="$pipedir/pipe_tor"
+    mkfifo "$pipe_direct";                  mkfifo "$pipe_tor"
 
-    local ip_tor=$(
-        curl --silent --proxy socks5://127.0.0.1:9050 \
-             --retry 1 --connect-timeout 2 --max-time 3 \
-             "$ip_site" || echo "")
+    (curl --silent --connect-timeout 5 --max-time 6 \
+         "$ip_site" || echo " ") > "$pipe_direct" &
+
+    (curl --silent --proxy socks5://127.0.0.1:9050  \
+         --connect-timeout 5 --max-time 6           \
+         "$ip_site" || echo "" ) > "$pipe_tor" &
+
+    local ip_direct=$(cat "$pipe_direct")
+    local ip_tor=$(cat "$pipe_tor")
+
+    netspeed=$(netspeed --compact enp3s0)
+    [[ -n $netspeed ]] && netspeed=" $netspeed"
 
     if [[ $ip_direct = " " ]] && [[ $ip_tor = "" ]]; then
-        echo "${gs}${ip_direct}${gs}"
+        echo "${gs}${ip_tor}${gs}"
+        echo "$netspeed"
     else
         geoip_direct=$(geoiplookup "$ip_direct" )
         geoip_tor=$(   geoiplookup "$ip_tor"    )
@@ -175,9 +185,6 @@ widget_geoip ()
                 'BEGIN { FS=OFS=", " }\
                 /^GeoIP/ {print glyph tolower($2)}' |
                 tr -d 'eioa')"
-
-        netspeed=$(netspeed --compact enp3s0)
-        [[ -n $netspeed ]] && netspeed=" $netspeed"
 
         [[ $ip_direct = "" ]] && geoip_direct="$ip_direct"
         [[ $ip_tor = "" ]]    && geoip_tor="$ip_tor"
