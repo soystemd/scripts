@@ -16,7 +16,7 @@ esac
 # print everything  
 
 main() {
-    if [ "$compact" ]; then
+    if [ "$compact" = true ]; then
         u=u
         d=d
         [ "$dlraw" -gt 5 ] && dl="$dlraw${d}"
