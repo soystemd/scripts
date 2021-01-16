@@ -12,7 +12,7 @@ mktemp -q -p /tmp volctl."${USER}".XXXXXX
 currentsinkfile="$(find -P /tmp -maxdepth 1 -name volctl\*)"
 
 # Get the index of sink device
-headphones="$(pactl list short sinks | awk '/analog-stereo/ {print $1}')"
+headphones="$(pactl list short sinks | grep -v snd_aloop | awk '/analog-stereo/ {print $1}')"
 
 # Write current sink device to temp file
 echo "analog-stereo" > "$currentsinkfile"
