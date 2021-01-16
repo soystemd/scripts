@@ -63,6 +63,7 @@ ftp_force_unmount()
 
 open()
 {
+    ftp_mount
     termopen "$mnt_path"
 }
 
