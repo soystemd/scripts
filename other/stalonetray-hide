@@ -20,18 +20,9 @@ show_hidden()
 }
 
 case "$1" in
-
-    on)
-        show_hidden
-        hide_current
-        ;;
-
-    off)
-        show_hidden
-        rm -f "$file"
-        ;;
-    *)
-        echo "give arg"
-        exit 1
-        ;;
+  init) stalonetray --config $STALONETRAYRC &
+        sleep 3; stalonetray-hide on ;;
+  on)   show_hidden; hide_current ;;
+  off)  show_hidden; rm -f "$file" ;;
+  *)    echo "give arg"; exit 1 ;;
 esac
