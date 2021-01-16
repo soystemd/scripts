@@ -11,6 +11,8 @@ case $1 in
     nt | next-tab                )  key=ctrl+Page_Down  ;;
     pt | prev-tab | previous-tab )  key=ctrl+Page_Up    ;;
     ct | close-tab               )  key=ctrl+w          ;;
+    su | scroll-up               )  key=Up              ;;
+    sd | scroll-down             )  key=Down            ;;
 esac
 
 if [ -n "$ffid" ]; then
