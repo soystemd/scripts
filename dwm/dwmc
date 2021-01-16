@@ -62,8 +62,6 @@ case "$1" in
   getlayoutname) get_current_layout_name ;;
   getlayoutlist) echo "$layout_list" | awk NF ;;
 
-  reset) dwmc quit; sleep 0.2; dwmc togglebarall ;;
-
   togglebarall) currtag=$(dwmc getcurrtag); dwmc viewall;
                 dwmc togglebar; dwmc view $currtag ;;
 
