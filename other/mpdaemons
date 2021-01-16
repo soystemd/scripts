@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# check if any mpd is already running
+pgrep --exact mpd >/dev/null && echo mpd already running && exit 1
+
+# increase memory lock limit (required for launching mpd)
+ulimit -l 65535
+
+# start the daemons
+mpd
+mpd ~/.config/mpd/mpd-cast-1.conf
+mpd ~/.config/mpd/mpd-cast-2.conf
+
+# start playing music in mpd-cast-1
+echo -e 'stop
+         clear
+         load DanceHits-cast
+         shuffle
+         play' |
+    while IFS= read -r cmd; do
+        echo "$cmd" | xargs mpc --host=letmein@192.168.1.20 --port=6601
+    done
+
+# start playing music in mpd-cast-2
+echo -e 'stop
+         clear
+         load DaftFuck-cast
+         play' |
+    while IFS= read -r cmd; do
+        echo "$cmd" | xargs mpc --host=letmein@192.168.1.20 --port=6602
+    done
