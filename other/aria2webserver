@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /usr/share/webapps/webui-aria2
+node node-server.js
