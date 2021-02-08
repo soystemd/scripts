@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/dash
 # You can control dwm with this script.
 
 # Config
@@ -52,7 +52,7 @@ case "$1" in
 
   incnmaster) dwm-msg run_command incnmaster   1  ;;
   decnmaster) dwm-msg run_command incnmaster '-1' ;;
-  resnmaster) for i in {1..9}; do dwmc decnmaster; done ;;
+  resnmaster) for i in $(seq 1 9); do dwmc decnmaster; done ;;
   setnmaster | setrow) dwm-msg run_command incnmaster "$2"; dwmc decnmaster ;;
 
   incgaps) dwm-msg run_command setgaps   5  ;;
@@ -75,7 +75,7 @@ getbin ()
     [ -z "$1" ] && echo 0 && return
     tag=$1
     [ "$tag" -gt 9 ] || [ "$tag" -lt 1 ] && return
-    echo $((1<<tag-1))
+    echo $((1 << tag-1))
 }
 
 set_layout ()
