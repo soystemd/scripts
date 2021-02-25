@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# play music in terminal-mode via mpv
+# for displaying position percentage, add the following to term-status-msg:
+# (${percent-pos}%)
+
+# terminal command for background mode
+termcmd="st-alt -e"
+
+addtompv () {
+    if [ "$append" = true ]; then
+        mpv-control cmd loadfile "$1" append-play >/dev/null 2>&1 &
+    else
+        mpv-control cmd loadfile "$1" >/dev/null 2>&1 &
+    fi
+    mpv-control cmd run clear >/dev/null 2>&1
+    shift
+    [ "$#" -gt 0 ] &&
+        for arg; do
+            mpv-control cmd loadfile "$1" append >/dev/null 2>&1
+            shift
+        done
+}
+
+play () {
+    tput civis # hide cursor
+    mpv                                                   \
+        --audio-display=no --term-osd-bar --keep-open=yes \
+        --msg-level=cplayer=error,ffmpeg/demuxer=error    \
+        --display-tags-clr                                \
+        --term-title='mpv Media Player'                   \
+        --term-status-msg='\nFilename: ${filename}\n\nTitle:  ${metadata/by-key/title}\nArtist: ${metadata/by-key/artist}\nAlbum:  ${metadata/by-key/album}\n\n${!playlist-count==1:Playing ${playlist-pos-1}/${playlist-count}\n}${?pause==yes:(Paused) }${time-pos} / ${duration}' \
+        --term-osd-bar-chars='[-> ]' \
+        "$@"
+    tput cnorm # cursor back to normal
+}
+
+foreground=false
+append=false
+[ "$1" = "--foreground" ] && shift && foreground=true
+[ "$1" = "--append" ] && shift && append=true
+
+pgrep --full \
+    "mpv --audio-display=no --term-osd-bar --keep-open=yes --" >/dev/null 2>&1
+if [ "$?" -eq 0 ]; then
+    addtompv "$@"
+    mpv-control resume
+    exit 0
+fi
+
+if [ "$foreground" = "true" ]; then
+    play "$@"
+    exit 0
+fi
+
+# play in a background terminal session
+setsid -f $termcmd mpv-music --foreground "$@"
+
+#--term-playing-msg='\nFilename: ${filename}\n\nTitle:  ${metadata/by-key/title}\nArtist: ${metadata/by-key/artist}\nAlbum:  ${metadata/by-key/album}\n' \
