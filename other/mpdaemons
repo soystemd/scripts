@@ -12,7 +12,7 @@ mpd ~/.config/mpd/mpd-cast-1.conf
 mpd ~/.config/mpd/mpd-cast-2.conf
 
 # start playing music in mpd-cast-1
-echo -e 'stop
+echo 'stop
          clear
          load DanceHits-cast
          shuffle
@@ -22,7 +22,7 @@ echo -e 'stop
     done
 
 # start playing music in mpd-cast-2
-echo -e 'stop
+echo 'stop
          clear
          load DaftFuck-cast
          play' |
