@@ -21,8 +21,9 @@ show_hidden()
 
 case "$1" in
   init) stalonetray --config $STALONETRAYRC &
-        sleep 3; stalonetray-hide on ;;
+        sleep 2; stalonetray-hide on ;;
   on)   show_hidden; hide_current ;;
+  on-delayed) sleep 1; show_hidden; hide_current ;;
   off)  show_hidden; rm -f "$file" ;;
   *)    echo "give arg"; exit 1 ;;
 esac
