@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Get some text from user via dmenu
 text="$(dmenu -p "$1")"
 [ -z "$text" ] && exit 1
