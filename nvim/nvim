@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Get rid of those ugly borders in vim by setting the background color of
 # the terminal to the same color as vim's (using an ANSI escape sequence),
 # and restoring it to however it was after exiting vim.
