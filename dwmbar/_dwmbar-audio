@@ -1,0 +1,17 @@
+#!/bin/sh
+. _dwmbar-config
+
+# Check if audio is playing through headphones or speakers
+[ "$(audioctl getsink)" = "analog-stereo" ] &&
+    echo "$glyph_headphone" ||
+    echo "$glyph_speaker"
+
+[ "$(audioctl getmute)" = "off" ] && echo "$glyph_mute"
+
+# Check if mpd is playing music
+playing=" $glyph_play"
+[ -z "$(mpc | awk '/\[playing\]/')" ] && playing=""
+
+echo "$(audioctl getvolume)%${playing}"
+
+delim

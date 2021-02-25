@@ -1,0 +1,9 @@
+#!/bin/sh
+. _dwmbar-config
+speed=$(netspeed --compact enp3s0)
+dl=$(echo "$speed" | head -n1)
+ul=$(echo "$speed" | tail -n1)
+[ "$dl" -gt 5 ] && echo "${glyph_dl} ${dl}" || echo -ne "\x05\x05"
+[ "$ul" -gt 5 ] && echo "${glyph_ul} ${ul}" || echo -ne "\x05\x05"
+
+delim

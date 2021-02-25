@@ -1,0 +1,7 @@
+#!/bin/sh
+. _dwmbar-config
+
+# echo -n "$glyph_geoip_tor"
+ip=$(curl --silent --proxy socks5://127.0.0.1:9050 --connect-timeout 7 --max-time 8 "$ip_site")
+if [ "$?" -ne 0 ] || [ -z "$ip" ]; then echo -n "$glyph_nonet"; exit; fi
+printf "$(geoiplookup "$ip" | cut -d, -f2 | tr -d 'ei oa')"

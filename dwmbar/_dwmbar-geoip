@@ -1,0 +1,10 @@
+#!/bin/sh
+. _dwmbar-config
+
+delim begin
+
+echo -n "$glyph_geoip"
+ip=$(curl --silent --connect-timeout 6 --max-time 7 "$ip_site")
+if [ "$?" -ne 0 ] || [ -z "$ip" ]; then echo -n " $glyph_nonet"; exit; fi
+printf "$(geoiplookup "$ip" | tr -d 'eioaEIOA' |
+    awk -F, '{gsub(/\<rn/, "ir", $2); print "\n" $2}' | tr -d ' ')"

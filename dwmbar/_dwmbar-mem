@@ -1,0 +1,17 @@
+#!/bin/sh
+. _dwmbar-config
+
+echo "$glyph_memory_1"
+free -h | awk 'FNR==2 {print $3}'
+
+# Show glyphs based on cpu load  
+load=$(top -bn1 | awk 'FNR==3 {print 100-$8}' | cut -d. -f1)
+case 1 in
+$(($load>= 90 )))echo "$glyph_hot_3"  ;;
+$(($load>= 70 )))echo "$glyph_hot_2"  ;;
+$(($load>= 50 )))echo "$glyph_hot_1"  ;;
+$(($load>= 30 )))echo "$glyph_cool_2" ;;
+               *)echo "$glyph_cool_1" ;;
+esac
+
+delim

@@ -1,0 +1,6 @@
+#!/bin/sh
+. _dwmbar-config
+echo "$glyph_keyboard"
+xkblayout-state print "%s "
+
+delim

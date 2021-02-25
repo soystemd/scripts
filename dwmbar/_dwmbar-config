@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# delimiter between widgets
+delim=']['
+delim_begin='[ '
+delim_end=']'
+
+# the website used for getting wan ip
+ip_site="checkip.amazonaws.com"
+
+# glyphs
+gp="$(printf '\x05')"
+gs="$(printf '\x06')"
+glyph_headphone="${gp}${gs}"
+ glyph_keyboard="${gp}${gs}"
+  glyph_speaker="${gp}${gs}"
+    glyph_geoip="${gp}${gs}"
+    glyph_break="${gp}${gs}"
+     glyph_temp="${gp}${gs}"
+     glyph_time="${gp}${gs}"
+     glyph_dl="${gp}${gs}"
+     glyph_ul="${gp}${gs}"
+     glyph_mute=""
+     glyph_play=""
+    glyph_nonet=""
+    glyph_hot_1="${gp}${gs}"
+    glyph_hot_2="${gp}${gs}"
+    glyph_hot_3="${gp}${gs}"
+   glyph_cool_1="${gp}${gs}"
+   glyph_cool_2="${gp}${gs}"
+ glyph_memory_1="${gp}${gs}"
+ glyph_memory_2="${gp}${gs}"
+ glyph_memory_3="${gp}${gs}"
+ glyph_memory_4="${gp}${gs}"
+ glyph_memory_5="${gp}${gs}"
+glyph_geoip_tor="${gp}﨩${gs}"
+
+# function that prints the delimiter
+delim() {
+    case $1 in
+        begin) echo -ne "\x05${delim_begin}\x06" ;;
+        end  ) echo -ne "\x05${delim_end}\x06"   ;;
+        *    ) echo -ne "\x05${delim}\x06"       ;;
+    esac
+}
