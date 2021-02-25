@@ -8,14 +8,15 @@ terminal=st
 terminal_alt=st-alt
 #
 prompt="Mount What?"
-prefix=""
-suffix=""
+prefix=" | "
+suffix=" | "
 delimiter="-> "
 #
 actions="
  Flash-> mount_usb
- Phone MTP-> mount_mtp
-ﴓ Phone WIFI-> mount_ftp
+ Phone USB (MTP)-> mount_mtp
+ Phone USB (ADB)-> mount_adb
+ﴓ Phone WIFI (FTP)-> mount_ftp
 "
 
 main()
@@ -24,6 +25,7 @@ case "$1" in
     usb) mount_usb ;;
     mtp) mount_mtp ;;
     ftp) mount_ftp ;;
+    adb) mount_adb ;;
     *) ask ;;
 esac
 }
@@ -75,6 +77,25 @@ mount_ftp()
     sleep 0.3
     opaque -r $terminal
 }
+
+mount_adb()
+{
+    $terminal_alt -e bashadb &
+    sleep 0.3
+    opaque -r $terminal
+}
+
+# mount_adb()
+# {
+#     mntdir=~/Mount/ADB
+#     fusermount -u "$mntdir"
+#     adb devices | wc -l | grep -v 2 &&
+#         mkdir -p "$mntdir" &&
+#         rmdir "$mntdir"    &&
+#         mkdir -p "$mntdir" &&
+#         adbfs -o auto_unmount "$mntdir" &&
+#         termopen "$mntdir"
+# }
 
 main "$@"
 exit
