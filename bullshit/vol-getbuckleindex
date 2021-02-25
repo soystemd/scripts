@@ -1,0 +1,5 @@
+#!/bin/sh
+# get sink index of bucklesping program
+pactl list sink-inputs |
+    awk 'BEGIN{RS="\n\n"; FS=OFS="\n"}; /application.name = "buckle"/ {print $1}' |
+    awk -F# '{print $2}'
