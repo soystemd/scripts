@@ -1,18 +1,16 @@
 #!/bin/sh
 
-# common
+# common variables
 export volatile_dir=/mnt/zramfs/sync
 
-# firefox
+# sync firefox
 export name=ccls
 export target_dir=$HOME/.cache/ccls-cache-log/ccls
 export perm=0755
-
 memsync
 
-# ccls-neovim
+# sync ccls-neovim
 export name=firefox
 export target_dir=$HOME/.mozilla/firefox/wn1iogv8.default-release
 export perm=0700
-
 memsync
