@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Get class name of a program and make all it's instances
 # transparent, opaque or toggle it at will.
 #
@@ -8,186 +8,54 @@
 # toggle it off in those layouts, and Toggle it back on in tiling layouts.
 
 # Config
-opacity_transparent="0xddffffff"
 opacity_semitrans="0xefffffff"
 opacity_opaque="0xffffffff"
-tmpdir=/tmp
+opacity_trans="0xddffffff"
+tmpfile="$XDG_RUNTIME_DIR/opaque/status"
 
-######
 main() {
-
-    if [ -z "$1" ] &&
-       [ -z "$2" ]; then
-       print_help_and_exit 0
-    fi
-
-    window_class="$2"
-
+    [ "$#" != 2 ] && echo 'error: give 2 args' && exit 1
+    winclass="$2"
     case "$1" in
-        -0 | -1 | -t | -r | -i)
-            [ -z "$2" ] && print_help_and_exit 1
-            ;;
-    esac
-
-# Handle Args
-    case "$1" in
-        -h | --help) print_help_and_exit 0 ;;
-        -0) set_all_windows transparent "$opacity_transparent" ;;
-        -1) set_all_windows opaque "$opacity_opaque" ;;
-        -2) set_all_windows semitrans "$opacity_semitrans" ;;
-        -t) toggle_transparency_all_windows ;;
-        -r) reapply_transparency_all_windows ;;
-        -i) opaque_init ;;
-        -I) opaque_cleanup; opaque_init ;;
-        -c) opaque_cleanup ;;
-        *) print_help_and_exit 0 ;;
-    esac
-}
-######
-
-
-
-######
-set_all_windows() {
-    local status="$1"
-    local opacity="$2"
-    set_raw_opacity_all_windows "$opacity"
-    exit_if_not_initialized no-print-error
-    set_status "$status"
-}
-
-toggle_transparency_all_windows() {
-    exit_if_not_initialized # reapplying requires initialization
-    case "$(get_status)" in
-        opaque)
-            [ "$(dwmc getlayoutname)" = cmaster ] && set_all_windows semitrans "$opacity_semitrans" && return
-            set_all_windows transparent "$opacity_transparent"
-            ;;
-        semitrans) set_all_windows opaque "$opacity_opaque" ;;
-        transparent) set_all_windows opaque "$opacity_opaque" ;;
+        -0) set_all trans     ;;
+        -1) set_all opaque    ;;
+        -2) set_all semitrans ;;
+        -r) set_all $(get_status) ;;
+        -t) toggle ;;
     esac
 }
 
-reapply_transparency_all_windows() {
-    exit_if_not_initialized # reapplying requires initialization
-    case "$(get_status)" in
-        opaque) set_all_windows opaque "$opacity_opaque" ;;
-        semitrans) set_all_windows semitrans "$opacity_semitrans" ;;
-        transparent) set_all_windows transparent "$opacity_transparent" ;;
-    esac
-}
-######
-
-
-
-######
-set_raw_opacity_all_windows() {
-    local window_id_list="$(
-        xdotool search --class "$window_class")"
-
-    local opacity="$1"
-
-    while IFS= read -r window_id
-    do
-        echo "$window_id"
-        xprop -id "$window_id" -format _NET_WM_WINDOW_OPACITY 32x \
+set_all() {
+    set_status "$1"
+    eval opacity="\$opacity_$1"
+    xdotool search --class "$winclass" | while IFS= read -r winid; do
+        xprop -id "$winid" -format _NET_WM_WINDOW_OPACITY 32x \
             -set _NET_WM_WINDOW_OPACITY "$opacity"
-
-    done <<< "$window_id_list"
+    done
 }
-######
 
+toggle() {
+    case "$(get_status)" in
+        trans | semitrans) set_all opaque ;;
+        opaque           ) set_all trans  ;;
+    esac
+}
 
-
-######
 opaque_init() {
-    remove_previous_status_files
-    mktemp -q "$tmpdir/opaque-${USER}-${window_class}-XXXXXX"
-    set_status
-}
-
-opaque_cleanup() {
-    find -P "$tmpdir" -maxdepth 1 -name opaque-\* -delete
-}
-
-exit_if_not_initialized() {
-    run_action=0
-    [ -z "$(get_status_file_path)" ] &&
-        run_action=1 &&
-    [ "$1" = "no-print-error" ] &&
-        exit 0
-    [ "$run_action" = "1" ] && error "not initialized"
+    [ -r "$tmpfile" ] && return
+    mkdir -p "$(dirname "$tmpfile")"
+    echo trans > "$tmpfile"
 }
 
 set_status() {
-    local status_file="$(get_status_file_path)"
-    echo "$1" > "$status_file"
+    opaque_init
+    echo "$1" > "$tmpfile"
 }
 
 get_status() {
-    local status_file="$(get_status_file_path)"
-    cat "$status_file"
+    opaque_init
+    cat "$tmpfile"
 }
-
-remove_previous_status_files() {
-    local status_file="$(get_status_file_path)"
-    rm -f "$status_file"
-}
-
-get_status_file_path() {
-    local status_file="$(
-        find -P "$tmpdir" -maxdepth 1 -name opaque-${USER}-${window_class}\*)" ||
-        error "get_status_file_path failed"
-    echo "$status_file"
-}
-######
-
-
-
-######
-error() {
-    echo "error: ${1}"
-    exit 1
-}
-######
-
-
-
-######
-print_help_and_exit() {
-echo '
-Manipulate the transparency of all windows of the same class
-Requires a compositor to work
-
-    Usage: opaque [OPTION] <WINDOW_CLASS>
-
-Options:
-
-  -0    set all windows transparent
-  -1    set all windows opaque
-
-  -i    initialize; create and set the temp files
-            initialization is required for using the next two options
-
-  -t    toggle transparency for all windows
-  -r    reapply transparency to all windows
-            useful for applying transparency to newly opened windows of a program.
-
-  -c    cleanup all the tempfiles;
-            can be used without any other arguments
-
-  -h | --help    print the help message and exit
-'
-exit "$1"
-}
-######
 
 main "$@"
-exit 0
-
-#-po | --set-active-window-opaque-and-preserve-opacity)
-#    set_activewindow_opaque_and_preserve
-#    ;;
-#-pr | --revert-active-window-opacity)
-#    revert_activewindow_opacity
-#    ;;
+exit
