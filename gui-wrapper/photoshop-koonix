@@ -3,7 +3,7 @@
 # (because of some graphical bugs).
 
 # Config
-photoshop_tag=$((1<<7)) # Tag 8
+photoshop_tag=$((1 << 7)) # Tag 8
 
 # Listen to dwm tag change event, and hide the bar if switched to tag 8
 # Do all these in background
