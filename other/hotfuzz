@@ -168,8 +168,8 @@ export FZF_DEFAULT_OPTS="$fzf_opts"
         done
     done |
         fzf |
-        eval "$trim_icons_from_filename_cmd" |
-        eval "$convert_filename_to_fullpath_cmd" &
+        sh -c "$trim_icons_from_filename_cmd" |
+        sh -c "$convert_filename_to_fullpath_cmd" &
 ) | cat
 
 exit 0
