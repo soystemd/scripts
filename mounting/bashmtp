@@ -111,4 +111,5 @@ done
 
 # Prompt the exit
 echo -e "\n    Done.\n"; read -p "Press enter to exit..."
+termopen "$top_level_mount_dir"
 exit 0
