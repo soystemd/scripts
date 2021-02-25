@@ -11,10 +11,7 @@ case "$1" in
 esac
 
 # check the number of given args (should be 2 or more)
-if [ "$#" -lt 2 ]; then
-    echo "specify paths"
-    exit 1
-fi
+[ "$#" -lt 2 ] && echo "specify paths" && exit 1
 
 # use good ol' cp if --fallback flag is given
 if [ "$fallback" = "true" ]; then
@@ -26,7 +23,5 @@ fi
 # use rsync, but don't display rsync's error message if it's exit code is 20
 exec 2>"$err"
 rsync -a --info=progress2 -- "$@"
-if [ $? -ne 20 ]; then
-    cat "$err"
-fi
+[ $? -ne 20 ] && cat "$err"
 rm -f "$err"
