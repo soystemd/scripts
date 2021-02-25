@@ -1,0 +1,12 @@
+#!/bin/sh
+
+siglist="
+audio    1
+kblayout 2
+net      3
+tor      4
+"
+
+signum="$(echo "$siglist" | awk NF | awk -v module="$1" '$1==module {print $2}')"
+[ -z "$signum" ] && echo "module $1 doesn't exist" && exit 1
+pkill --signal RTMIN+$signum -x dwmbar
