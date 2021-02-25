@@ -10,6 +10,7 @@ lock_delay_msec=$(( lock_delay_minute * 60 * 1000 ))
 while true; do
     idle="$(xprintidle)"
     [ "$idle" -ge "$lock_delay_msec" ] &&
+        mpv-control isallpaused &&
         sysact lock --invoked-by-autolock
     sleep 15
 done
