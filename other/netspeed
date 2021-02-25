@@ -17,14 +17,8 @@ esac
 
 main() {
     if [ "$compact" = true ]; then
-        u=u
-        d=d
-        [ "$dlraw" -gt 5 ] && dl="$dlraw${d}"
-        [ "$ulraw" -gt 5 ] && ul="$ulraw${u}"
-        [ -n "$dl" ] && [ -n "$ul" ] && seperator=" " && delete="${u}${d}"
-        echo "${dl}${seperator}${ul}" | tr -d "$delete"
-        exit 0
-
+        echo "$dlraw"
+        echo "$ulraw"
     else
         printf "In: %2i KB | Out: %2i KB\n" $dlraw $ulraw;
     fi
