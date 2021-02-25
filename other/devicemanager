@@ -1,0 +1,3 @@
+#!/bin/sh
+[ "$1" = "--list" ] && lsusb | grep -v 'root hub' && exit 0
+watch -n1 dev --list
