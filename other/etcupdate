@@ -1,4 +1,4 @@
 #!/bin/sh
 path=$XDG_CONFIG_HOME/etcfiles
 cd $path
-source $path/update.sh
+. $path/update.sh
