@@ -1,4 +1,0 @@
-#!/bin/sh
-# Toggle mute of current audio output.
-
-pactl set-sink-mute "$(vol-getcurrentsinkid)" toggle

@@ -1,8 +1,0 @@
-#!/bin/sh
-# Decreases the volume of the currently active output audio device.
-
-MINVOL=0
-MAXVOL=150
-
-NEWVOL="$(vol-get-decreased-value "$(vol-getcurrentvolume | tr -d '%s')" $MINVOL $MAXVOL)%"
-pactl set-sink-volume "$(vol-getcurrentsinkid)" "${NEWVOL}"

@@ -1,0 +1,104 @@
+#!/bin/bash
+
+# Config
+minvol=0
+maxvol=150
+round_to=10
+
+main ()
+{
+    for arg; do
+        case "$1" in
+            +  | inc  | increase ) increase_volume; dwmbarref audio ;;
+            -  | dec  | decrease ) decrease_volume; dwmbarref audio ;;
+            m  | mute | togglemute ) toggle_mute;   dwmbarref audio ;;
+            switch  | switchsink   ) switch_sink;   dwmbarref audio ;;
+            reapply | reapplysink  ) reapply_sink ;;
+            gm | getmute ) get_mute ;;
+            gv | getvolume ) get_volume ;;
+            gs | getsink   ) get_current_sink ;;
+        esac
+        shift
+    done
+}
+
+
+# get current volume
+get_volume () {
+    amixer get Master | tail -n1 | cut -d% -f1 | rev | cut -d' ' -f1 | tr -d '[]' | rev
+}
+
+
+# increase volume to the nearest multiple of "$round_to" value
+increase_volume () {
+    local vol=$(get_volume)
+    [ "$vol" -ge "$minvol" ] && [ "$vol" -lt "$maxvol" ] &&
+        set_volume_to $((((vol+round_to)/round_to)*round_to))
+}
+
+
+# decrease volume to the nearest multiple of "$round_to" value
+decrease_volume () {
+    local vol=$(get_volume)
+    [ "$vol" -gt "$minvol" ] && [ "$vol" -le "$maxvol" ] &&
+        set_volume_to $((((vol-1)/round_to) *round_to))
+}
+
+
+# switch audio device
+switch_sink () {
+    set_sink_to $(echo 1 - $(get_current_sink_index) | bc)
+}
+
+
+# reapply audio output device to programs that are outputting to the wrong device
+reapply_sink () {
+    set_sink_to $(get_current_sink_index)
+}
+
+
+# set volume to given value
+set_volume_to () {
+    pactl set-sink-volume \
+        $(pactl list short sinks | grep $(get_current_sink) | cut -f1) $1%
+}
+
+
+# set output device to given device
+set_sink_to () {
+    pactl set-default-sink  $1
+    set_sinkof_all_programs_to $1
+}
+
+
+set_sinkof_all_programs_to () {
+    program=0
+    while true; do
+        pactl move-sink-input $program $1 2>&1 | grep -q Failure && break
+        program=$((program + 1))
+    done
+}
+
+
+get_current_sink () {
+    pactl info | grep 'Default Sink' | cut -d. -f4 | cut -f1
+}
+
+
+get_current_sink_index () {
+    pactl list short sinks | grep $(get_current_sink) | cut -f1
+}
+
+
+get_mute () {
+    amixer get Master | tail -n1 | rev | cut -d' ' -f1 | tr -d '[]' | rev
+}
+
+
+toggle_mute () {
+    amixer set Master toggle
+}
+
+
+main "$@"
+exit

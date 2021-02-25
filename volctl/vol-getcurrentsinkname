@@ -1,7 +1,0 @@
-#!/bin/sh
-# Get the name of the current audio output device
-
-CURRENTSINKFILE="$(find -P /tmp -maxdepth 1 -name volctl\*)"
-[ -z "$CURRENTSINKFILE" ] && { echo "error: volctl temp file not found" ; exit 1; }
-
-cat "$CURRENTSINKFILE"

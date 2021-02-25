@@ -1,5 +1,0 @@
-#!/bin/sh
-# Get the numeral ID (Specified by PulseAudio) of the current audio output device
-
-CURRENTSINK=$(vol-getcurrentsinkname)
-pactl list short sinks | grep -v snd_aloop | awk -v pattern="$CURRENTSINK" '$0~pattern {print $1}'

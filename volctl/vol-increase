@@ -1,8 +1,0 @@
-#!/bin/sh
-# Increases the volume of the currently active output audio device.
-
-minvol=0
-maxvol=150
-
-newvol="$(vol-get-increased-value "$(vol-getcurrentvolume | tr -d '%s')" $minvol $maxvol)%"
-pactl set-sink-volume "$(vol-getcurrentsinkid)" "$newvol"
