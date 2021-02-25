@@ -2,9 +2,14 @@
 # A replacement for mv with progressbar,
 #
 # It's also filesystem-aware, so if you are moving files inside a filesystem,
-# It falls back to mv instead of copying and then deleting, because mv is
-# faster than copying and then deleting the files when moving files within
-# the same filesystem/partition.
+# It falls back to mv instead of copying and then deleting.
+
+# move using mv
+fallback() {
+    echo "using mv..."
+    mv -iv -- "$@"
+    exit 0
+}
 
 # error file
 err="/tmp/supermv-error-${USER}"
@@ -16,20 +21,10 @@ case "$1" in
 esac
 
 # check the number of given args (should be 2 or more)
-if [ "$#" -lt 2 ]; then
-    echo "specify paths"
-    exit 1
-fi
+[ "$#" -lt 2 ] && echo "specify paths" && exit 1
 
 # use good ol' mv if --fallback flag is given
-fallback()
-{
-    echo "using mv..."
-    mv -iv -- "$@"
-    exit 0
-}
 [ "$fallback" = "true" ] && fallback "$@"
-
 
 # check src-destination filesystems.
 for dest; do true; done
@@ -38,11 +33,8 @@ dest_fs="$(stat -c "%d" "$dest")"
 i="$#";
 for src; do
     src_fs="$(stat -c "%d" "$src")"
-    if [ "$src_fs" = "$dest_fs" ]; then
-        fallback=true
-        break
-    fi
-    i=$(( i - 1 ))
+    [ "$src_fs" = "$dest_fs" ] && fallback=true && break
+    i=$((i - 1))
     [ "$i" -le 1 ] && break
 done
 
@@ -52,15 +44,18 @@ done
 # use rsync, but don't display rsync's error message if it's exit code is 20
 exec 2>"$err"
 rsync -a --remove-source-files --info=progress2 -- "$@"
-if [ $? -ne 20 ]; then
-    cat "$err"
-fi
+[ $? -ne 20 ] && cat "$err"
 rm -f "$err"
+
+# exit right here if rsync didn't come through.
+[ "$?" != 0 ] &&
+    echo "failed moving files; thus didn't delete source files" &&
+    exit 1
 
 # remove leftover empty directories in srcs.
 i="$#";
 for src; do
     find "$src" -type d -empty -delete
-    i=$(( i - 1 ))
+    i=$((i - 1))
     [ "$i" -le 1 ] && break
 done
