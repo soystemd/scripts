@@ -1,6 +1,7 @@
 #!/bin/bash
-# Launch a predefined stream in mpv via youtube-dl.
-# List of streams is in $XDG_CONFIG_HOME/stream-player.
+
+# Launch predefined internet streams in mpv via youtube-dl.
+# List of streams is "$XDG_CONFIG_HOME/stream-player/strlist".
 
 # Usage:
 #
@@ -18,19 +19,10 @@
 # Path to cookie file
 cookie="$XDG_DATA_HOME/ytdl-cookies/youtube.cuck"
 # Path to list of streams
-stream_list="$XDG_CONFIG_HOME/stream-player/stream.list"
+stream_list="$XDG_CONFIG_HOME/stream-player/strlist"
 
 # Main function
 main() {
-
-    [ -z "$*" ] &&
-        echo "
-        error: no args
-        give an option or a stream name to play
-        options:
-        -f or --foreground to not fork the stream to background
-        -k or --kill to just kill the already playing stream and exit" &&
-        return
 
     if   [ "$1" = "-k" ] || [ "$1" = "--kill" ]; then
 
@@ -41,6 +33,11 @@ main() {
         shift
         play_stream_in "$1" foreground
 
+    elif [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ -z "$1" ]; then
+
+        print_help
+        exit 0
+
     else
 
         play_stream_in "$1" background
@@ -48,10 +45,9 @@ main() {
     fi
 }
 
-
-#############
-# FUNCTIONS #
-#############
+# ============
+# = Functions
+# ============
 
 # Take stream name and an option for playing in foreground or background
 play_stream_in() {
@@ -82,7 +78,7 @@ stream_back() {
     2>/dev/null youtube-dl -q -4 --proxy 127.0.0.1:8123 --cookies "$cookie" \
         -f 95 -o - "$1" | mpv --quiet --no-term-osd-bar - >/dev/null 2>&1 &
 #    mpv --quiet --no-taskbar-progress \
-#        --ytdl-raw-options-append=proxy=127.0.0.1:8123 "$1" |\
+#        --ytdl-raw-options-append=proxy=127.0.0.1:8123 "$1" |
 #        xargs -0 notify-send "  Stream Player Error"
 }
 
@@ -100,9 +96,8 @@ stream_name_to_url() {
 
     [ -z "$stream_name" ] && return
 
-    local stream_url="$(awk 'BEGIN{FS=OFS="#"}; {print $1}' "$stream_list" |\
-        awk NF | awk -v pattern="$stream_name"\
-        '$1~pattern {print $2}')"
+    local stream_url="$(awk 'BEGIN{FS=OFS="#"}; {print $1}' "$stream_list" |
+        awk NF | awk -v pattern="$stream_name" '$1~pattern {print $2}')"
 
     echo "$stream_url"
 }
@@ -110,22 +105,46 @@ stream_name_to_url() {
 # Return an error message and return code of 1 if the given url is empty.
 check_stream_url() {
         local stream_url="$1"
-        [ -z "$stream_url" ] &&\
-            echo "error: given stream doesn't exist in stream.list" >&1 &&\
-            notify-send "  Stream Player"\
-            "Error: Given stream doesn't exist in stream.list" &&\
+        [ -z "$stream_url" ] &&
+            echo "error: given stream doesn't exist in stream.list" >&1 &&
+            notify-send "  Stream Player" \
+            "Error: Given stream doesn't exist in stream.list" &&
             return 1
         return 0
 }
 
 # Check if the given file is readable/accessible
 check_readable() {
-    [ ! -r "$1" ] &&\
-        echo "error: stream.list file doesn't exist or unreadable" >&1 &&\
-        notify-send "  Stream Player"\
-        "Error: stream.list file doesn't exist or unreadable" &&\
+    [ ! -r "$1" ] &&
+        echo "error: stream.list file doesn't exist or unreadable" >&1 &&
+        notify-send "  Stream Player" \
+        "Error: stream.list file doesn't exist or unreadable" &&
         return 1
     return 0
+}
+
+print_help() {
+
+printf "\
+
+Launch predefined internet streams in mpv via youtube-dl.
+List of streams is "$XDG_CONFIG_HOME/stream-player/strlist".
+
+Usage:
+
+     Launch the stream and fork it to background:
+         play <stream name>
+
+     Launch the stream but don't fork to foreground and ouput to stdout:
+         play -f <stream name>
+         play --foreground <stream name>
+
+     Kill the stream:
+         play -k
+         play --kill
+
+"
+
 }
 
 check_readable "$stream_list" || exit
