@@ -5,13 +5,13 @@
 user="koonix"
 
 # Restart the service
-if [ "$1" != "--quiet" ]; then
-    sudo -u "$user" notify-send "Restarting Tor..."
+if [ "$1" != "--quiet" ]; then :;
+    # sudo -u "$user" notify-send "Restarting Tor..."
 fi
 sv restart tor
 
 # Refresh my bar
-sudo -u "$user" sucklessbar-refresh -rg 5 2
+sudo -u "$user" dwmbarref tor
 
 # Log a message that tor was restarted.
 sudo -u "$user" logger -t tor-reset "tor restarted" &
