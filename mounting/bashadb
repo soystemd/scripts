@@ -1,0 +1,96 @@
+#!/bin/bash
+# A bashmount-style ftp mounting script.
+# It Mounts my phone's ftp server (powered by solid explorer).
+# You can use it to mount any ftp server though.
+#
+# The ftp server's user and pass is in ~/.netrc (which is read by ftp itself),
+# So I don't have to type it in everytime.
+#
+# Here is my .netrc contents:
+#
+# machine 192.168.1.15
+# login koonix
+# password mypassword
+
+
+# Config
+mnt_path="$HOME/Mount/ADB"
+
+main()
+{
+    # Big boy ethernal while loop
+    while true; do
+        clear
+        helper_text
+        read -p "Command: " entered_command
+        case "$entered_command" in
+            m) adb_mount;         continue ;;
+            u) adb_unmount;       continue ;;
+            f) adb_force_unmount; continue ;;
+            o) open;              continue ;;
+            n) network;           continue ;;
+            q)  exit 0 ;;
+            "") continue ;;
+            *) command_output="Invalid Command" ;;
+        esac
+    done
+}
+
+adb_mount()
+{
+    command_output="$(
+        (mkdir -p "$mnt_path"
+        adb devices | wc -l | grep -v 2 >/dev/null &&
+            2>&1 adbfs -o auto_unmount "$mnt_path"
+        echo "ADB Mounted")
+    )"
+}
+
+adb_unmount()
+{
+    command_output="$(
+        fusermount -u "$mnt_path" 2>&1
+        rmdir "$mntpath"
+        rm "$mntpath"
+        echo "ADB Unmounted"
+    )"
+}
+
+adb_force_unmount()
+{
+    command_output="$(
+        2>&1 sudo umount --force "$mnt_path" && echo "ADB Unmounted"
+    )"
+}
+
+open()
+{
+    adb_mount
+    termopen "$mnt_path/sdcard"
+}
+
+network()
+{
+    command_output="$(
+        adb connect '192.168.1.15:5555'
+    )"
+}
+
+helper_text()
+{
+echo -e "${command_output}
+
+━━━━━━━━━━━ Commands ━━━━━━━━━━━━
+
+  m: mount    o: open    n:network
+
+  u: unmount      f: force unmount
+
+  enter: redraw   q: quit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"
+}
+
+# Run the main function
+main; exit
