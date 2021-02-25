@@ -1,0 +1,9 @@
+#!/bin/sh
+# run aard2 dictionary local java webserver
+# (if it's not already running)
+
+cmd='java -XX:+SuppressFatalErrorMessage -Dslobber.browse=true  \
+    -jar /home/koonix/.srcs-local/aard2/aard2-web-0.7-java6.jar \
+    /home/koonix/.srcs-local/aard2/slob/enwiktionary-20201207.slob'
+
+pgrep --full 'java -XX:' || eval setsid -f "$cmd" >/dev/null 2>&1
