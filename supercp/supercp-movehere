@@ -21,13 +21,15 @@ trap mvf 2 15
 
 # print some info
 clear
-echo -e "    moving:\n"
-cat "$file"
-echo -e "\n    to:\n\n${1}\n"
+echo "    moving:"
+echo; cat "$file"; echo
+echo "    to:"; echo
+echo "$1"; echo
 
 # prompt the user if the files were copied more than 2 minutes ago.
 if test "`find "$file" -mmin +2`"; then
-    read -p "proceed? [Y/n]" x
+    printf "proceed? [Y/n] "
+    read -r x
     case "$x" in
         y) ;;
         Y) ;;
@@ -48,13 +50,13 @@ fi
 # done
 if [ "$?" -ne 0 ]; then
     echo
-figlet "move aborted."
-    read
+    figlet "move aborted."
+    read x
     exit 1
 fi
 figlet "move finished."
 
 if test "`find "$file" -mmin +2`"; then
-    read
+    read x
 fi
 mvf
