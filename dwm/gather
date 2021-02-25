@@ -17,7 +17,7 @@ id_list() { xdotool search --class "$class"; }
 # infinite loop
 dwm-msg --ignore-reply subscribe client_focus_change_event  |
     jq --unbuffered '.client_focus_change_event.new_win_id' |
-        while IFS=$'\n' read -r new_win_id; do
+        while IFS= read -r new_win_id; do
             xdotool search --class "$class" | grep -q "$new_win_id" &&
                 dwmc tag "$tag" && dwmc view "$tag"
         done
