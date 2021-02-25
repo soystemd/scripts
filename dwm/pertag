@@ -14,17 +14,11 @@ while true; do
     dwm-msg --ignore-reply subscribe tag_change_event |
     jq --unbuffered '.tag_change_event.monitor_number' |
     \
-    while IFS=$'\n' read; do
+    while IFS= read x; do
         case "$(dwmc getlayoutname)" in
-            cfmaster)
-                semitransp
-                ;;
-            monocle | float)
-                notransp
-                ;;
-            *)
-                transp
-                ;;
+            cfmaster)         semitransp ;;
+            monocle  | float) notransp   ;;
+            *)                transp     ;;
         esac
     done
 done
