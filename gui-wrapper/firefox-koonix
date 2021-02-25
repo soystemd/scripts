@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # switch to tag 5 if ffgather is running; open firefox if not.
 
 set -E
@@ -6,7 +6,7 @@ trap '[ "$?" -ne 77 ] || exit 77' ERR
 
 ff() {
     find /mnt/zramfs/sync -name 'firefox*' | wc -l | grep -v -q '0' &&
-        setsid -f $BROWSER && vrs || notify-send firefoxwtf
+        setsid -f $BROWSER || notify-send firefoxwtf
 }
 
 pgrep -f 'gather firefox' &&
