@@ -1,0 +1,10 @@
+#!/bin/sh
+# compatible dmenu; doesn't pass through the -i option to dmenu.
+
+for arg do
+    shift
+    [ "$arg" = "-i" ] && continue
+    set -- "$@" "$arg"
+done
+
+dmenu "$@"
