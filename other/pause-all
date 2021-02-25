@@ -5,4 +5,4 @@
 mpc pause
 mpv-control pause
 playerctl -a pause
-sucklessbar-refresh
+dwmbarref audio
