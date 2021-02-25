@@ -1,45 +1,120 @@
-#!/bin/sh
+#!/bin/bash
 # You might notice all mpv commands are aliased to have this input-ipc-server
 # thing. That's just for this particular command, which allows us to pause
 # every single one of them with one command!
 
 main () {
     case "$1" in
-        p | pause ) pause  ;;
-        r | resume) resume ;;
-        t | toggle) toggle ;;
+        p | pause  ) setprop '"pause", true'    ;;
+        r | resume ) setprop '"pause", false'   ;;
+        t | toggle ) toggle ;;
+        g | getpaused   ) getprop pause | getdata ;;
+        R | raw         ) getprop_raw pause ;;
+        i | isplaying   ) isplaying     ;;
+        a | isallpaused ) isallpaused   ;;
+        f | nofullscreen) setprop '"fullscreen", false' ;;
+        n | name        ) getprop filename | getdata    ;;
+        T | title       ) getprop metadata/by-key/title | getdata ;;
+        l | propertylist) getprop property-list | getdata ;;
+        C | commandlist ) getprop command-list  | getdata ;;
+        c | cmd | command ) shift; cmd "$@" ;;
         *) echo "mpv controller script"; exit ;;
     esac
 }
 
-pause () {
-    for socket in /tmp/mpvSockets/*; do
-        echo '{ "command": ["set_property", "pause", true] }' |
-        socat - "$socket";
+format_args () {
+    local args="\"${1}\""
+    shift
+    for arg; do
+        args="${args}, \"${1}\""
+        shift
+    done
+    echo "$args"
+}
+
+cmd () {
+    args=$(format_args "$@")
+    find /tmp/mpvSockets -mindepth 1 -maxdepth 1 |
+        while IFS= read -r socket; do
+            printf '{ "command": ['"$args"'] }\n' |
+            socat - "$socket"
+        done
+}
+
+getprop () {
+    getprop_raw "$@" 2>/dev/null
+}
+
+getprop_raw () {
+    find /tmp/mpvSockets -mindepth 1 -maxdepth 1 |
+        while IFS= read -r socket; do
+            printf '{ "command": ["get_property", "'"$@"'"] }\n' |
+            socat - "$socket"
+        done
+}
+
+setprop () {
+    find /tmp/mpvSockets -mindepth 1 -maxdepth 1 |
+        while IFS= read -r socket; do
+            printf '{ "command": ["set_property", '"$@"'] }\n' |
+            socat - "$socket" 2>/dev/null
     done
 }
 
-resume () {
-    for socket in /tmp/mpvSockets/*; do
-        echo '{ "command": ["set_property", "pause", false] }' |
-        socat - "$socket";
-    done
-
+getdata () {
+    #tr '"' | sed '4q;d'
+    jq '.data'
 }
 
-toggle  () {
+toggle () {
 
     file=/tmp/mpv-control
     [ ! -r "$file" ] && echo 1 > $file
 
     if [ "$(cat $file)" = "1" ]; then
-        pause
+        mpv-control pause
         echo 0 > $file
     else
-        resume
+        mpv-control resume
         echo 1 > $file
     fi
 }
 
+isplaying_bg () {
+    mpv-control getpaused |
+        grep -v 'true' >/dev/null
+}
+
+isplaying () {
+        isplaying_bg &&
+        playing_exit playing success ||
+        playing_exit paused  error
+}
+
+isallpaused () {
+        isplaying_bg &&
+        playing_exit playing error ||
+        playing_exit paused  success
+}
+
+playing_exit () {
+    [ "$1" = "playing" ] &&
+        echo some mpv instances are playing ||
+        echo no mpv instance is playing
+
+    [ "$2" = "success" ] && exit 0 || exit 1
+}
+
 main "$@"
+
+find /tmp/mpvSockets -mindepth 1 -maxdepth 1 |
+    while IFS= read -r socket; do
+        printf '{ "command": ["get_property", "pause"] }\n' |
+        socat - "$socket"
+    done 2>&1 |
+        grep -v success  |
+        awk '{print $7}' |
+        tr -d "\","      |
+        xargs rm -f
+
 exit
