@@ -1,0 +1,342 @@
+#!/bin/bash
+# This script be responsible for my statusbar.
+
+# =====================
+# = Config
+# =====================
+
+# Bar update interval (in seconds)
+interval=10
+
+# The delimiter character(s) between widgets (ex. ][, |, )
+# The escape sequences \x01 through \x06 represent colors
+# \x05 is gray, \x06 is white(ish).
+delimiter="\x05 ][ \x06"
+
+# The delimiter at the end of the bar
+enddelimiter="\x05 ]"
+
+# Whatever you want to show up at the beginning of the bar
+bar_prefix=" "
+
+# Glyphs/Emojis
+gp="\x05"; gs="\x06"
+glyph_headphone="${gs}${gs}"
+ glyph_keyboard="${gp}${gs}"
+  glyph_speaker="${gs}${gs}"
+    glyph_geoip="${gp}${gs}"
+    glyph_break="${gp}${gs}"
+     glyph_temp="${gp}${gs}"
+     glyph_time="${gp}${gs}"
+     glyph_play=""
+    glyph_hot_1="${gs}${gs}"
+    glyph_hot_2="${gs}${gs}"
+    glyph_hot_3="${gs}${gs}"
+   glyph_cool_1="${gs}${gs}"
+   glyph_cool_2="${gs}${gs}"
+ glyph_memory_1="${gp}${gs}"
+ glyph_memory_2="${gp}${gs}"
+ glyph_memory_3="${gp}${gs}"
+ glyph_memory_4="${gp}${gs}"
+ glyph_memory_5="${gp}${gs}"
+glyph_geoip_tor=""
+
+# Position of widgets
+widpos_timedate=1
+widpos_kblayout=2
+widpos_audio=3
+widpos_geoip=4
+widpos_mem=5
+
+# Internet Connectivity / IP Address domain
+# stuff like ifconfig.me, icanhazip.com, ipecho.net/plain, ifconfig.co, ...
+ip_site="checkip.amazonaws.com"
+
+# =====================
+# = End of Config
+# =====================
+
+# =====================
+# = Widgets
+# =====================
+
+# Widget that shows time and date.
+widget_timedate ()
+{
+    echo "$(date -Im |
+        awk -v glyph="$glyph_time" 'BEGIN{FS=OFS="+"} \
+        {gsub(/T/, " x ", $1); print glyph " " $1}')"
+}
+
+# Widget that shows the current keyboard layout.
+widget_kb_layout ()
+{
+    echo "$glyph_keyboard"; echo "$(xkblayout-state print " %s")"; echo
+}
+
+# Widget that shows some audio related stuff.
+widget_audio ()
+{
+    # Check if audio is playing through headphones or speakers
+    currentsink=$(vol-getcurrentsinkname)
+    [[ $currentsink = analog-stereo ]] &&
+        sinkicon="$glyph_headphone" ||
+        sinkicon="$glyph_speaker"
+
+    # Check if mpd is playing music
+    playing=" $glyph_play"
+    [[ -z $(mpc | awk '/\[playing\]/') ]] && playing=""
+
+    echo "${sinkicon} "; echo "$(vol-getcurrentvolumeandmute)${playing}"
+}
+
+# Widget that shows memory usage.
+widget_mem ()
+{
+    load=$(top -bn1 | grep "Cpu(s)" |
+           sed "s/.*, *\([0-9.]*\)%* id.*/\1/" |
+           awk '{print 100 - $1}'|
+           awk 'BEGIN{FS="."}{print $1}')
+
+# Show glyphs based on cpu load percentage  
+    load_verbal=$(case 1 in
+    $(($load>= 90 )))echo "$glyph_hot_3"  ;;
+    $(($load>= 70 )))echo "$glyph_hot_2"  ;;
+    $(($load>= 50 )))echo "$glyph_hot_1"  ;;
+    $(($load>= 30 )))echo "$glyph_cool_2" ;;
+                   *)echo "$glyph_cool_1" ;;
+    esac)
+
+    # mem=$(free -h | awk '/^Mem:/ {print $3}')
+    # mem=${mem:0:-2}
+
+    # mem_verbal=$(case 1 in
+    # $(($mem>= 3000 )))echo "$glyph_memory_5" ;;
+    # $(($mem>= 2500 )))echo "$glyph_memory_4" ;;
+    # $(($mem>= 1500 )))echo "$glyph_memory_3" ;;
+    # $(($mem>= 700  )))echo "$glyph_memory_2" ;;
+    #                 *)echo "$glyph_memory_1" ;;
+    # esac)
+
+    # echo "$load_verbal $mem_verbal"
+
+    echo "$(free -h |
+        awk -v glyph="$glyph_memory_1"\
+        -v verb="$load_verbal"\
+        '/^Mem:/ {print glyph" "$3" "verb}')"
+}
+
+widget_mem ()
+{
+    echo -e 'o_o\x05\x05\x05\x05'
+}
+
+# Widget that shows CPU temp.
+widget_cpu ()
+{
+    local cpu="$(sensors |
+        awk -v glyph="$glyph_temp" '/^Core 0/ {print glyph $3}' | tr '+' ' ')"
+    echo "${cpu::-4}°C"
+}
+
+widget_break ()
+{
+    local time_left_till_nextbreak=$(cat /tmp/eagle-${USER})
+    [[ $time_left_till_nextbreak = pause ]] &&
+        time_left_till_nextbreak=""
+    echo "$glyph_break $time_left_till_nextbreak"
+}
+
+# Widget that shows your location based on your public ip.
+widget_geoip ()
+{
+    # make fifo files
+    pipedir="$XDG_RUNTIME_DIR/sucklessbar"; pipe="$pipedir/pipo"; mkdir -p "$pipedir"
+    pipe_direct="$pipedir/pipe_direct";     pipe_tor="$pipedir/pipe_tor"
+    mkfifo "$pipe_direct";                  mkfifo "$pipe_tor"
+
+    (curl --silent --connect-timeout 5 --max-time 6 \
+         "$ip_site" || echo " ") > "$pipe_direct" &
+
+    (curl --silent --proxy socks5://127.0.0.1:9050  \
+         --connect-timeout 5 --max-time 6           \
+         "$ip_site" || echo "" ) > "$pipe_tor" &
+
+    local ip_direct=$(cat "$pipe_direct")
+    local ip_tor=$(cat "$pipe_tor")
+
+    rm "$pipe_direct"
+    rm "$pipe_tor"
+
+    netspeed=$(netspeed --compact enp3s0)
+    [[ -n $netspeed ]] && netspeed=" $netspeed"
+
+    if [[ $ip_direct = " " ]] && [[ $ip_tor = "" ]]; then
+        echo "${gs}${ip_tor}${gs}"
+        echo "$netspeed"
+    else
+        geoip_direct=$(geoiplookup "$ip_direct" )
+        geoip_tor=$(   geoiplookup "$ip_tor"    )
+
+        geoip_direct="$(echo "$geoip_direct" |
+            awk \
+                -v glyph="$glyph_geoip"\
+                'BEGIN { FS=OFS="," }\
+                /^GeoIP/ {gsub(/Iran/, "ir", $2);\
+                print glyph tolower($2) " "; exit}')"
+
+        [[ -n $glyph_geoip_tor ]] && glyph_geoip_tor="${glyph_geoip_tor} "
+
+        geoip_tor="$(echo "$geoip_tor" |
+            awk \
+                -v glyph="$glyph_geoip_tor"\
+                'BEGIN { FS=OFS=", " }\
+                /^GeoIP/ {print glyph tolower($2)}' |
+                tr -d 'eioa')"
+
+        [[ $ip_direct = "" ]] && geoip_direct="$ip_direct"
+        [[ $ip_tor = "" ]]    && geoip_tor="$ip_tor"
+        echo "$geoip_direct"
+        echo "$geoip_tor"
+        echo "$netspeed"
+    fi
+
+}
+
+# =====================
+# = End of Widgets
+# =====================
+
+# Main function
+main ()
+{
+    case "$1" in
+        -h | --help) echo "statusbar script for suckless's dwm"; exit 0 ;;
+    esac
+    # Refresh the statusbar
+    while true ; do
+        refresh_bar_all
+        sleep "$interval" &
+        wait
+    done
+}
+
+# Now for the dirty background detail:
+# Refresh and write the constructed statusbar
+refresh_bar_all ()
+{
+    refresh_widgets_all
+    build_bar
+    write_bar
+    # Save these widget's output to use them in refresh_widgets_set*
+    geoip_last_output="${WIDGET[$widpos_geoip]}"
+    mem_last_output="${WIDGET[$widpos_mem]}"
+}
+
+refresh_bar_set1 ()
+{
+    refresh_widgets_set1
+    build_bar
+    write_bar
+    # Save this widget's output to use them in refresh_widgets_set*
+    mem_last_output="${WIDGET[$widpos_mem]}"
+}
+
+# Refresh and write the constructed statusbar (but only refresh set2)
+refresh_bar_set2 ()
+{
+    refresh_widgets_set2
+
+    WIDGET[$widpos_geoip]="$geoip_last_output"
+
+    [[ $(echo "${WIDGET[$widpos_geoip]}" | wc -m) -lt 3 ]] &&
+        WIDGET[$widpos_geoip]="${gp}${gp}${gp}"
+
+    WIDGET[$widpos_mem]="$mem_last_output"
+
+    [[ $(echo "${WIDGET[$widpos_mem]}"   | wc -m) -lt 3 ]] &&
+        WIDGET[$widpos_mem]="${gp}${gp}${gp}"
+
+    build_bar
+    write_bar
+}
+
+# Refresh and write the constructed statusbar (but only refresh set3)
+refresh_bar_set3 ()
+{
+    refresh_widgets_set3
+    build_bar
+    write_bar
+    # Save these widget's output to use them in refresh_widgets_set2
+    geoip_last_output="${WIDGET[$widpos_geoip]}"
+}
+
+# Stick all the widgets together into a line
+build_bar ()
+{
+    local widget_count="${#WIDGET[@]}"
+    statusbar=$(for ((i = "$widget_count"; i > 0; i--))
+    do
+        echo "$delimiter"
+        echo "${WIDGET[$i]}"
+    done)
+# Remove the first six characters of statusbar (leftover of the delimiter)
+    statusbar="${bar_prefix}${statusbar:6}${enddelimiter}"
+}
+
+# Write the bar to dwm via xsetroot
+write_bar ()
+{
+    xsetroot -name "$(echo -e "$statusbar" | tr -d '\n')" &
+    wait
+}
+
+# Construct the statusbar
+refresh_widgets_all ()
+{
+    # All the widgets
+    refresh_widgets_set1
+
+    # Volume and keyboard-layout widgets
+    refresh_widgets_set2
+
+    # Geoip widget
+    refresh_widgets_set3
+}
+
+# Construct the statusbar while updating only some of the widgets
+refresh_widgets_set1 ()
+{
+    # Time and date widget
+    WIDGET[$widpos_timedate]=$(widget_timedate)
+
+    # Memory usage widget
+    WIDGET[$widpos_mem]=$(widget_mem)
+}
+
+# Construct the statusbar while updating only some of the widgets
+refresh_widgets_set2 ()
+{
+    # Keyboard layout widget
+    WIDGET[$widpos_kblayout]=$(widget_kb_layout)
+
+    # Audio widget
+    WIDGET[$widpos_audio]=$(widget_audio)
+
+    # Time left till next eagle break
+#    WIDGET[$widpos_break]=$(widget_break)
+}
+
+# Construct the statusbar while updating only some of the widgets
+refresh_widgets_set3 ()
+{
+    # Geoip widget
+    WIDGET[$widpos_geoip]=$(widget_geoip)
+}
+
+# Trap for updating the statusbar at will
+trap 'refresh_bar_set2' SIGTRAP
+trap 'refresh_bar_set3' SIGALRM
+
+# Run the main function
+main "$@"; exit

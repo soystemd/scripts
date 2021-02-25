@@ -1,0 +1,10 @@
+#!/bin/sh
+killall -q pulseaudio
+killall -q buckle
+pulseaudio --start --log-target=syslog
+sleep 2
+setsid -f buckle -s 0 -f >/dev/null 2>&1
+sleep 2
+sudo chrt --fifo -p 50 $(pgrep pulseaudio)
+sudo chrt --fifo -p 50 $(pgrep buckle)
+vol-setbuckleto speakers

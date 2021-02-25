@@ -1,0 +1,64 @@
+#!/bin/bash
+# Send SIGTRAP or SIGALRM signals to sucklessbar script,
+# which will run specified functions upon receiving these signals.
+
+main() {
+case "$1" in
+    -v)
+        bar_refresh_vol_kb
+        ;;
+    -g)
+        bar_refresh_geo
+        ;;
+    -r | -rv | -vr)
+        repetitive_vol_kb "$2" "$3"
+        ;;
+    -rg | -gr)
+        repetitive_geo "$2" "$3"
+        ;;
+    -h | --help)
+        echo -e $'usage:\e
+        refresh the volume and keyboard layout once:
+            sucklessbar-refresh
+        or
+            sucklessbar-refresh -v
+
+        refresh the geolocation widget once:
+            sucklessbar-refresh -g
+
+        refresh the bar a number of times at fixed intervals:
+            sucklessbar-refresh [-r | -rv | -rg] <number of refreshes> <interval>'
+        ;;
+    *)
+        bar_refresh_vol_kb
+        ;;
+esac
+}
+
+bar_refresh_vol_kb() {
+    killall -s SIGTRAP sucklessbar > /dev/null 2>&1
+}
+
+repetitive_vol_kb() {
+    repetitive bar_refresh_vol_kb "$1" "$2"
+}
+
+bar_refresh_geo() {
+    killall -s SIGALRM sucklessbar > /dev/null 2>&1
+}
+
+
+repetitive_geo() {
+    repetitive bar_refresh_geo "$1" "$2"
+}
+
+repetitive() {
+    count="$2"
+    interval="$3"
+    for (( i=0; i<count; i++ )); do
+        "$1"
+        sleep "$interval"
+    done &
+}
+
+main "$@"; exit
