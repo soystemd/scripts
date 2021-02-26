@@ -12,9 +12,9 @@ main ()
             +  | inc  | increase ) increase_volume; dwmbarref audio ;;
             -  | dec  | decrease ) decrease_volume; dwmbarref audio ;;
             m  | mute | togglemute ) toggle_mute;   dwmbarref audio ;;
-            switch  | switchsink   ) switch_sink;   dwmbarref audio ;;
+            cycle   | cyclesinks   ) cycle_sinks;   dwmbarref audio ;;
             reapply | reapplysink  ) reapply_sink ;;
-            gm | getmute ) get_mute ;;
+            gm | getmute   ) get_mute ;;
             gv | getvolume ) get_volume ;;
             gs | getsink   ) get_current_sink ;;
         esac
@@ -33,7 +33,7 @@ get_volume () {
 increase_volume () {
     local vol=$(get_volume)
     [ "$vol" -ge "$minvol" ] && [ "$vol" -lt "$maxvol" ] &&
-        set_volume_to $((((vol+round_to)/round_to)*round_to))
+        set_volume_to $(( (vol+round_to)/round_to*round_to ))
 }
 
 
@@ -41,13 +41,13 @@ increase_volume () {
 decrease_volume () {
     local vol=$(get_volume)
     [ "$vol" -gt "$minvol" ] && [ "$vol" -le "$maxvol" ] &&
-        set_volume_to $((((vol-1)/round_to) *round_to))
+        set_volume_to $(( (vol-1)/round_to*round_to ))
 }
 
 
 # switch audio device
-switch_sink () {
-    set_sink_to $(echo 1 - $(get_current_sink_index) | bc)
+cycle_sinks () {
+    set_sink_to $(get_next_sink_index)
 }
 
 
@@ -66,7 +66,7 @@ set_volume_to () {
 
 # set output device to given device
 set_sink_to () {
-    pactl set-default-sink  $1
+    pactl set-default-sink $1
     set_sinkof_all_programs_to $1
 }
 
@@ -81,12 +81,21 @@ set_sinkof_all_programs_to () {
 
 
 get_current_sink () {
-    pactl info | grep 'Default Sink' | cut -d. -f4 | cut -f1
+    pactl info | grep 'Default Sink' | cut -d: -f2- | tr -d ' '
+  # pactl info | grep 'Default Sink' | cut -d. -f4  | cut -f1
 }
 
 
 get_current_sink_index () {
     pactl list short sinks | grep $(get_current_sink) | cut -f1
+}
+
+
+get_next_sink_index () {
+    sinks="$(pactl list short sinks)"
+    firstsink="$(echo "$sinks" | head -n1)"
+    echo -e "${sinks}\n${firstsink}" |
+        awk -v ptrn="$(get_current_sink)" '$2==ptrn {getline; print $1; exit}'
 }
 
 
