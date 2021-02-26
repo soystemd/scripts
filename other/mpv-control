@@ -62,7 +62,6 @@ setprop () {
 }
 
 getdata () {
-    #tr '"' | sed '4q;d'
     jq '.data'
 }
 
