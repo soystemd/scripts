@@ -2,9 +2,11 @@
 . _dwmbar-config
 
 # Check if audio is playing through headphones or speakers
-[ "$(audioctl getsink)" = "analog-stereo" ] &&
-    echo "$glyph_headphone" ||
-    echo "$glyph_speaker"
+case "$(audioctl getsink)" in
+    *analog-stereo*) echo "$glyph_headphone" ;;
+    *hdmi-stereo*)   echo "$glyph_speaker"  ;;
+    *) echo '?' ;;
+esac
 
 [ "$(audioctl getmute)" = "off" ] && echo "$glyph_mute"
 
